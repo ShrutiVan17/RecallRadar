@@ -6,7 +6,7 @@
 [![Strands Agents](https://img.shields.io/badge/Strands-Agents_SDK-FF9900)](https://strandsagents.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-RecallRadar turns receipts and household inventory records into a continuously checkable safety inventory. It compares exact model, lot, brand, and product details against recall notices, rejects weak matches, and surfaces only decisions that need a person.
+RecallRadar turns receipts and household inventory records into an animated, continuously checkable safety inventory. It compares exact model, lot, brand, and product details against recall notices, rejects weak matches, and surfaces only decisions that need a person.
 
 ## Why it matters
 
@@ -48,6 +48,8 @@ Run one check with `python monitor.py --once`, or keep the agent watching with `
 
 ## Run with Strands + Amazon Bedrock
 
+For a complete Windows walkthrough, use [AWS setup](docs/AWS_SETUP.md).
+
 Configure AWS credentials using the AWS CLI or your normal AWS environment. Do not paste credentials into source code.
 
 ~~~bash
@@ -77,6 +79,7 @@ Select **Live CPSC feed** in the sidebar. RecallRadar queries the U.S. Consumer 
 |---|---|
 | `app.py` | Complete Streamlit product experience |
 | `monitor.py` | Quiet recurring monitor with new-decision memory |
+| `docs/AWS_SETUP.md` | Secure Bedrock connection walkthrough |
 | `recallradar/agent.py` | Strands agent and custom tools |
 | `recallradar/core.py` | Conservative matching and risk rules |
 | `recallradar/sources.py` | Demo and live CPSC recall sources |

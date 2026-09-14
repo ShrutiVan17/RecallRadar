@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-import json
 import os
 import tempfile
-from pathlib import Path
+from html import escape
 
 import pandas as pd
 import streamlit as st
@@ -113,15 +112,20 @@ if matches is not None:
         st.subheader("Decisions requiring your attention")
         for match in matches:
             packet = build_action_packet(match)
+            safe_product = escape(f"{match.product.brand} {match.product.name}")
+            safe_recall_id = escape(match.recall.recall_id)
+            safe_reasons = escape(" · ".join(match.reasons))
+            safe_immediate = escape(packet["immediate_action"])
+            safe_remedy = escape(packet["recommended_remedy"])
             st.markdown(
                 f"""
                 <div class="recall-card">
                   <div class="eyebrow">{match.risk} risk · {match.confidence}% evidence score</div>
-                  <h3>{match.product.brand} {match.product.name}</h3>
-                  <div class="muted">Recall {match.recall.recall_id}</div>
-                  <p><b>Why it matched:</b> {" · ".join(match.reasons)}</p>
-                  <p><b>Do now:</b> {packet["immediate_action"]}</p>
-                  <p><b>Proposed resolution:</b> {packet["recommended_remedy"]}</p>
+                  <h3>{safe_product}</h3>
+                  <div class="muted">Recall {safe_recall_id}</div>
+                  <p><b>Why it matched:</b> {safe_reasons}</p>
+                  <p><b>Do now:</b> {safe_immediate}</p>
+                  <p><b>Proposed resolution:</b> {safe_remedy}</p>
                 </div>
                 """,
                 unsafe_allow_html=True,

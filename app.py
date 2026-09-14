@@ -160,9 +160,9 @@ if uploaded:
     inventory_path = temp.name
 
 with st.expander("Products under protection", expanded=False):
-    st.dataframe(preview, use_container_width=True, hide_index=True)
+    st.dataframe(preview, width="stretch", hide_index=True)
 
-if st.button("Start animated safety scan", type="primary", use_container_width=True):
+if st.button("Start animated safety scan", type="primary", width="stretch"):
     with st.status("Radar is investigating product signals…", expanded=True) as status:
         st.write("◌ Reading receipt-derived identifiers")
         st.write("◌ Retrieving recall intelligence")

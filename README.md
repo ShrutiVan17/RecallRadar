@@ -40,13 +40,25 @@ pip install -r requirements.txt
 streamlit run app.py
 ~~~
 
-Click **Run safety scan**. Demo mode requires no AWS keys and uses synthetic household data.
+Click **Start animated safety scan**. Demo mode requires no AWS keys and uses synthetic household data.
 
 ### Background mode
 
 Run one check with `python monitor.py --once`, or keep the agent watching with `python monitor.py --source live --interval 3600`. It stores only previously surfaced match IDs and emits new decision packets, so unchanged conditions stay quiet.
 
-## Run with Strands + Amazon Bedrock
+## Free Strands route: Google Gemini
+
+Gemini 2.5 Flash-Lite can run RecallRadar through the real Strands agent without an AWS account. Create a Gemini API key in Google AI Studio, keep it outside GitHub, then run:
+
+~~~powershell
+$env:GEMINI_API_KEY="YOUR_KEY"
+$env:RECALLRADAR_PROVIDER="gemini"
+streamlit run app.py
+~~~
+
+Choose **Strands + Gemini free tier** in the sidebar.
+
+## Optional route: Strands + Amazon Bedrock
 
 For a complete Windows walkthrough, use [AWS setup](docs/AWS_SETUP.md).
 

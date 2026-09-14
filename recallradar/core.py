@@ -22,6 +22,7 @@ class Product:
     lot: str = ""
     purchase_date: str = ""
     retailer: str = ""
+    upc: str = ""
 
 
 @dataclass(frozen=True)
@@ -36,6 +37,7 @@ class Recall:
     remedy: str = ""
     official_url: str = ""
     recall_date: str = ""
+    upcs: str = ""
 
 
 @dataclass(frozen=True)
@@ -86,6 +88,7 @@ def match_product(product: Product, recall: Recall) -> Match | None:
     product_lot = normalize(product.lot)
     recall_models = split_identifiers(recall.models)
     recall_lots = split_identifiers(recall.lots)
+    recall_upcs = split_identifiers(recall.upcs)
 
     if product_model and product_model in recall_models:
         score += 65
@@ -93,6 +96,10 @@ def match_product(product: Product, recall: Recall) -> Match | None:
     if product_lot and product_lot in recall_lots:
         score += 75
         reasons.append(f"Exact lot match: {product.lot}")
+    product_upc = normalize(product.upc)
+    if product_upc and product_upc in recall_upcs:
+        score += 75
+        reasons.append(f"Exact UPC match: {product.upc}")
 
     brand_match = bool(normalize(product.brand)) and normalize(product.brand) == normalize(recall.brand)
     if brand_match:
@@ -145,6 +152,8 @@ def build_action_packet(match: Match) -> dict:
         "status": "AWAITING_HUMAN_APPROVAL",
         "immediate_action": "Stop using and isolate the product safely.",
         "recommended_remedy": remedy,
+        "hazard": match.recall.hazard,
+        "recall_date": match.recall.recall_date,
         "evidence": list(match.reasons),
         "official_notice": match.recall.official_url,
         "draft_message": (

@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import os
 import tempfile
+import json
+from dataclasses import asdict
+from datetime import datetime, timezone
 from html import escape
 
 import pandas as pd
@@ -11,6 +14,17 @@ import streamlit as st
 
 from recallradar.agent import deterministic_scan, run_strands_scan
 from recallradar.core import build_action_packet
+from recallradar.sources import load_inventory
+
+
+# Streamlit Community Cloud stores root-level secrets in st.secrets. Mirror only
+# the expected configuration keys into the process environment used by Strands.
+try:
+    for secret_name in ("GEMINI_API_KEY", "RECALLRADAR_PROVIDER", "RECALLRADAR_GEMINI_MODEL"):
+        if secret_name in st.secrets and not os.getenv(secret_name):
+            os.environ[secret_name] = str(st.secrets[secret_name])
+except Exception:
+    pass
 
 
 st.set_page_config(page_title="RecallRadar", page_icon="◉", layout="wide")
@@ -87,6 +101,14 @@ st.markdown(
     .action-line {display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-top:.7rem}
     .action-box {background:rgba(255,255,255,.035);border-radius:10px;padding:.7rem;color:#dce8f2}
     .action-box b {color:var(--mint);display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em}
+    .setup-card {background:rgba(13,28,45,.82);border:1px solid #203a51;border-radius:16px;
+      padding:1rem 1.1rem;margin:.55rem 0 1rem;min-height:116px}
+    .setup-card .step {color:var(--mint);font-weight:700;font-size:.72rem;letter-spacing:.11em;text-transform:uppercase}
+    .setup-card h3 {font-size:1.05rem;margin:.35rem 0}.setup-card p{color:var(--muted);font-size:.85rem;margin:0}
+    .source-banner {border-radius:12px;padding:.7rem .9rem;margin:.4rem 0 1rem;background:#10283a;border:1px solid #24506a;color:#bfe9dc}
+    .source-banner.demo {background:#292318;border-color:#6c5730;color:#ffe0a3}
+    .hazard {background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.2);border-radius:10px;padding:.7rem;margin:.65rem 0;color:#ffd1d1}
+    .decision-state {font-weight:700;color:#9af5d5}
 
     div.stButton > button {border-radius:12px;border:1px solid #39715f;transition:.25s ease}
     div.stButton > button:hover {transform:translateY(-2px);box-shadow:0 8px 25px rgba(99,230,190,.18)}
@@ -149,20 +171,59 @@ with st.sidebar:
     st.write("✓ Official verification required")
     st.write("✓ No action without approval")
 
-uploaded = st.file_uploader("Add a household inventory CSV", type=["csv"])
+st.subheader("Run a household safety check")
+step1, step2, step3 = st.columns(3)
+step1.markdown('<div class="setup-card"><span class="step">Step 1</span><h3>Add your inventory</h3><p>Upload a receipt export or simple CSV. Only the product name is mandatory.</p></div>', unsafe_allow_html=True)
+step2.markdown('<div class="setup-card"><span class="step">Step 2</span><h3>Choose intelligence</h3><p>Use official live notices, then let Strands prepare only evidence-backed decisions.</p></div>', unsafe_allow_html=True)
+step3.markdown('<div class="setup-card"><span class="step">Step 3</span><h3>Review safely</h3><p>Open the official notice, approve or dismiss, and download an audit-ready report.</p></div>', unsafe_allow_html=True)
+
+upload_col, template_col = st.columns([3, 1])
+with upload_col:
+    uploaded = st.file_uploader("Household inventory CSV", type=["csv"], help="Accepted fields include name/product_name, brand, model, lot, UPC, purchase date, and retailer.")
+with template_col:
+    st.caption("Need the correct format?")
+    st.download_button(
+        "Download CSV template",
+        data=open("data/demo_inventory.csv", "rb").read(),
+        file_name="recallradar_inventory_template.csv",
+        mime="text/csv",
+        width="stretch",
+    )
+
 inventory_path = "data/demo_inventory.csv"
-preview = pd.read_csv(inventory_path)
+preview_error = None
+try:
+    if uploaded:
+        temp = tempfile.NamedTemporaryFile(delete=False, suffix=".csv")
+        temp.write(uploaded.getvalue())
+        temp.close()
+        inventory_path = temp.name
+    products_preview = load_inventory(inventory_path)
+    preview = pd.DataFrame([asdict(product) for product in products_preview])
+except Exception as exc:
+    products_preview, preview = [], pd.DataFrame()
+    preview_error = str(exc)
 
-if uploaded:
-    preview = pd.read_csv(uploaded)
-    temp = tempfile.NamedTemporaryFile(delete=False, suffix=".csv")
-    preview.to_csv(temp.name, index=False)
-    inventory_path = temp.name
+if source == "live":
+    st.markdown('<div class="source-banner"><b>LIVE MODE</b> · Searches the official U.S. CPSC Recall API using each product model or name. Results depend on agency coverage.</div>', unsafe_allow_html=True)
+else:
+    st.markdown('<div class="source-banner demo"><b>DEMONSTRATION MODE</b> · Uses synthetic notices to provide a reliable judging walkthrough. No result is a real recall.</div>', unsafe_allow_html=True)
 
-with st.expander("Products under protection", expanded=False):
-    st.dataframe(preview, width="stretch", hide_index=True)
+if preview_error:
+    st.error(preview_error)
+else:
+    identifier_ready = sum(bool(item.model or item.lot or item.upc) for item in products_preview)
+    duplicates = int(preview["product_id"].duplicated().sum()) if not preview.empty else 0
+    q1, q2, q3 = st.columns(3)
+    q1.metric("Products loaded", len(products_preview))
+    q2.metric("Identifier-ready", f"{identifier_ready}/{len(products_preview)}")
+    q3.metric("Duplicate IDs", duplicates)
+    if identifier_ready < len(products_preview):
+        st.warning("Some products have no model, lot, or UPC. RecallRadar will search them, but it suppresses weak matches to avoid false alarms.")
+    with st.expander("Review products before scanning", expanded=False):
+        st.dataframe(preview, width="stretch", hide_index=True)
 
-if st.button("Start animated safety scan", type="primary", width="stretch"):
+if st.button("Start animated safety scan", type="primary", width="stretch", disabled=bool(preview_error)):
     with st.status("Radar is investigating product signals…", expanded=True) as status:
         st.write("◌ Reading receipt-derived identifiers")
         st.write("◌ Retrieving recall intelligence")
@@ -173,6 +234,9 @@ if st.button("Start animated safety scan", type="primary", width="stretch"):
             status.update(label="Scan complete — attention map updated", state="complete")
             st.session_state["matches"] = matches
             st.session_state["product_count"] = len(products)
+            st.session_state["scan_source"] = source
+            st.session_state["scan_time"] = datetime.now(timezone.utc).isoformat()
+            st.session_state["decisions"] = {}
             st.session_state.pop("agent_brief", None)
 
             if use_strands:
@@ -197,13 +261,15 @@ if matches is not None:
         unsafe_allow_html=True,
     )
     product_count = st.session_state.get("product_count", 0)
-    c1, c2, c3 = st.columns(3)
+    c1, c2, c3, c4 = st.columns(4)
     c1.metric("Protected products", product_count)
     c2.metric("Decisions surfaced", len(matches))
-    c3.metric("Unauthorized actions", 0)
+    c3.metric("Source", "CPSC" if st.session_state.get("scan_source") == "live" else "Synthetic")
+    c4.metric("Unauthorized actions", 0)
 
     if not matches:
-        st.success("Radar clear — no evidence-backed recall candidate was found.")
+        st.success("No evidence-backed candidate was found in this scan.")
+        st.caption("This does not certify that a product is safe. Keep identifiers updated and scan again when new notices appear.")
     else:
         st.subheader("Attention map")
         for index, match in enumerate(matches):
@@ -212,6 +278,7 @@ if matches is not None:
             safe_recall_id = escape(match.recall.recall_id)
             safe_immediate = escape(packet["immediate_action"])
             safe_remedy = escape(packet["recommended_remedy"])
+            safe_hazard = escape(packet.get("hazard") or "Hazard details were not supplied by the source.")
             chips = "".join(f'<span class="chip">{escape(reason)}</span>' for reason in match.reasons)
             st.markdown(
                 f"""
@@ -223,6 +290,7 @@ if matches is not None:
                     <div class="eyebrow">{escape(match.risk)} signal · recall {safe_recall_id}</div>
                     <h3>{safe_product}</h3>
                     <div class="chips">{chips}</div>
+                    <div class="hazard"><b>Why it matters:</b> {safe_hazard}</div>
                     <div class="action-line">
                       <div class="action-box"><b>Do now</b>{safe_immediate}</div>
                       <div class="action-box"><b>Prepared remedy</b>{safe_remedy}</div>
@@ -233,13 +301,50 @@ if matches is not None:
                 unsafe_allow_html=True,
             )
             with st.expander(f"Decision packet · {match.match_id}"):
+                current_state = st.session_state.setdefault("decisions", {}).get(match.match_id, "AWAITING REVIEW")
+                st.markdown(f'Current status: <span class="decision-state">{escape(current_state)}</span>', unsafe_allow_html=True)
+                if st.session_state.get("scan_source") == "live" and match.recall.official_url:
+                    st.link_button("Open official CPSC notice ↗", match.recall.official_url, width="stretch")
+                else:
+                    st.caption("Synthetic notice used for demonstration; there is no official recall page.")
                 st.json(packet)
                 left, right = st.columns(2)
                 if left.button("Approve prepared request", key=f"approve-{match.match_id}"):
-                    st.toast("Approval captured — no external contact made in demo mode.", icon="✓")
-                    st.success("Decision approved and recorded safely.")
+                    st.session_state["decisions"][match.match_id] = "APPROVED FOR MANUAL ACTION"
+                    st.toast("Approval recorded. No company was contacted automatically.", icon="✓")
                 if right.button("Dismiss and verify manually", key=f"dismiss-{match.match_id}"):
-                    st.info("Signal dismissed. Verify the identifier on the official notice.")
+                    st.session_state["decisions"][match.match_id] = "DISMISSED — MANUAL VERIFICATION"
+                    st.toast("Decision saved for manual verification.", icon="↗")
+
+        export_rows = []
+        for match in matches:
+            packet = build_action_packet(match)
+            export_rows.append({
+                "product_id": match.product_id,
+                "product": f"{match.product.brand} {match.product.name}".strip(),
+                "model": match.product.model,
+                "lot": match.product.lot,
+                "upc": match.product.upc,
+                "recall_id": match.recall_id,
+                "risk": match.risk,
+                "confidence": match.confidence,
+                "hazard": packet.get("hazard", ""),
+                "recommended_remedy": packet["recommended_remedy"],
+                "official_notice": packet["official_notice"],
+                "decision": st.session_state.get("decisions", {}).get(match.match_id, "AWAITING REVIEW"),
+            })
+        export_frame = pd.DataFrame(export_rows)
+        export_json = {
+            "generated_at": st.session_state.get("scan_time"),
+            "source": st.session_state.get("scan_source"),
+            "products_checked": product_count,
+            "decisions": export_rows,
+            "disclaimer": "Potential matches only. Verify with the official agency notice before acting.",
+        }
+        st.subheader("Take the results with you")
+        dl1, dl2 = st.columns(2)
+        dl1.download_button("Download decision report (CSV)", export_frame.to_csv(index=False), "recallradar_decisions.csv", "text/csv", width="stretch")
+        dl2.download_button("Download audit packet (JSON)", json.dumps(export_json, indent=2), "recallradar_audit.json", "application/json", width="stretch")
 
     if st.session_state.get("agent_brief"):
         st.subheader("Strands decision brief")
@@ -247,6 +352,6 @@ if matches is not None:
 
 st.divider()
 st.caption(
-    "Prototype only. A candidate is not an official safety determination. "
+    "RecallRadar is a decision-support agent. A candidate is not an official safety determination. "
     "Always verify model and lot information on the official agency notice."
 )

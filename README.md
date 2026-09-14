@@ -6,7 +6,7 @@
 [![Strands Agents](https://img.shields.io/badge/Strands-Agents_SDK-FF9900)](https://strandsagents.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-RecallRadar turns receipts and household inventory records into an animated, continuously checkable safety inventory. It compares exact model, lot, brand, and product details against recall notices, rejects weak matches, and surfaces only decisions that need a person.
+RecallRadar turns receipts and household inventory records into an animated, continuously checkable safety inventory. It compares exact model, lot, UPC, brand, and product details against recall notices, rejects weak matches, and surfaces only decisions that need a person.
 
 ## Why it matters
 
@@ -16,11 +16,12 @@ Recall announcements are scattered across agencies and news feeds. People rarely
 
 1. Loads a receipt-derived household inventory.
 2. Validates identifiers and flags records that need better evidence.
-3. Retrieves a demo feed or current CPSC recall notices.
+3. Searches the official CPSC API using each household product's model or name.
 4. Matches conservatively using model/lot identifiers plus brand and product evidence.
 5. Rejects ambiguous candidates instead of creating panic.
 6. Prepares a stop-use, refund, replacement, or contact-manufacturer action packet.
-7. Requests human approval before any external action.
+7. Records a human approve/dismiss decision without contacting anyone automatically.
+8. Exports a decision report and machine-readable audit packet.
 
 ## Architecture
 
@@ -48,7 +49,7 @@ Run one check with `python monitor.py --once`, or keep the agent watching with `
 
 ## Free Strands route: Google Gemini
 
-Gemini 2.5 Flash-Lite can run RecallRadar through the real Strands agent without an AWS account. Create a Gemini API key in Google AI Studio, keep it outside GitHub, then run:
+Gemini 3.5 Flash-Lite can run RecallRadar through the real Strands agent without an AWS account. Create a Gemini API key in Google AI Studio, keep it outside GitHub, then run:
 
 ~~~powershell
 $env:GEMINI_API_KEY="YOUR_KEY"
@@ -83,7 +84,13 @@ If Bedrock is unavailable, the product remains demonstrable in deterministic dem
 
 ## Live CPSC feed
 
-Select **Live CPSC feed** in the sidebar. RecallRadar queries the U.S. Consumer Product Safety Commission feed and falls back gracefully if the service is unavailable. Live results depend on source availability and field completeness.
+Select **Live CPSC feed** in the sidebar. RecallRadar queries the U.S. Consumer Product Safety Commission feed. If the service is unavailable, the app reports the error instead of presenting synthetic results as live. Live results depend on source availability and field completeness.
+
+In live mode, RecallRadar sends targeted `ProductModel` or `ProductName` searches to the official CPSC Recall API. It never substitutes synthetic notices when a live search returns no results. CPSC does not cover every product category; food, medicine, vehicles, and other regulator-specific recalls are outside this build's live scope.
+
+## Inventory format
+
+Only `name` (or `product_name`) is required. For reliable matching, include at least one exact identifier: `model`, `lot`, or `upc`. RecallRadar also accepts friendly headers such as `manufacturer`, `model_number`, `lot_number`, `barcode`, and `store`, and generates missing product IDs automatically. The interface includes a downloadable CSV template.
 
 ## Repository map
 

@@ -21,3 +21,11 @@ def test_action_never_auto_submits():
     recall = Recall("R1", "Snack recall", "NutriPeak", "Snack Bars", lots="L2407A")
     packet = build_action_packet(match_product(product, recall))
     assert packet["status"] == "AWAITING_HUMAN_APPROVAL"
+
+
+def test_exact_upc_match_is_supported():
+    product = Product("P1", "Countertop Cooker", "Example", upc="012345678905")
+    recall = Recall("R1", "Cooker recall", "Other", "Cooker", upcs="012345678905")
+    match = match_product(product, recall)
+    assert match is not None
+    assert match.confidence >= 75

@@ -35,7 +35,8 @@ def load_household_inventory() -> str:
 def retrieve_official_recall_notices() -> str:
     """Retrieve recall notices from the selected demo or live CPSC source."""
     if _STATE["source"] == "live":
-        recalls = fetch_cpsc_recalls()
+        products = _STATE.get("products") or load_inventory(_STATE["inventory_path"])
+        recalls = fetch_cpsc_recalls(products)
         source = "U.S. CPSC public recall feed"
     else:
         recalls = demo_recalls()
@@ -48,7 +49,12 @@ def retrieve_official_recall_notices() -> str:
 def verify_exact_recall_matches() -> str:
     """Match inventory against recalls conservatively and suppress weak candidates."""
     products = _STATE.get("products") or load_inventory(_STATE["inventory_path"])
-    recalls = _STATE.get("recalls") or demo_recalls()
+    if "recalls" in _STATE:
+        recalls = _STATE["recalls"]
+    elif _STATE.get("source") == "live":
+        recalls = fetch_cpsc_recalls(products)
+    else:
+        recalls = demo_recalls()
     matches = scan(products, recalls)
     _STATE["matches"] = matches
     return json.dumps({
@@ -80,7 +86,7 @@ def prepare_recall_action(match_id: str) -> str:
 
 def deterministic_scan(inventory_path: str, source: str = "demo") -> tuple[list[Match], list]:
     products = load_inventory(inventory_path)
-    recalls = fetch_cpsc_recalls() if source == "live" else demo_recalls()
+    recalls = fetch_cpsc_recalls(products) if source == "live" else demo_recalls()
     return scan(products, recalls), products
 
 

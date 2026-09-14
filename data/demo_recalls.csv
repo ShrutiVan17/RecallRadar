@@ -1,0 +1,4 @@
+recall_id,title,brand,product_name,models,lots,hazard,remedy,official_url,recall_date
+DEMO-2026-041,NorthStar air fryers recalled,NorthStar Kitchen,Digital Air Fryer,"AF-800, AF-900, AF-910",,Units can overheat and create a fire and burn hazard,Stop use and register for a free replacement,https://example.com/demo-recall/DEMO-2026-041,2026-09-10
+DEMO-2026-052,Selected NutriPeak bars recalled,NutriPeak,Protein Snack Bars,,"L2407A, L2407B",Possible undeclared allergen exposure,Do not consume; return for a refund,https://example.com/demo-recall/DEMO-2026-052,2026-09-12
+DEMO-2026-061,BrightNest seat notice applies to another model,BrightNest,Infant Travel Seat,"BN-40, BN-41",,Harness may detach and cause an injury hazard,Contact manufacturer for replacement,https://example.com/demo-recall/DEMO-2026-061,2026-09-13

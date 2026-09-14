@@ -11,7 +11,8 @@ RecallRadar creates a private, receipt-derived inventory and checks it against p
 ## How we built it
 
 - Strands Agents SDK for autonomous orchestration and tool selection
-- Amazon Bedrock as the model provider
+- Google Gemini 3.5 Flash-Lite through Strands as the zero-cost model path
+- Amazon Bedrock as an optional deployment path
 - Custom Python tools for inventory validation, notice retrieval, exact matching, risk classification, and action preparation
 - CPSC public recall service as the live source
 - Streamlit for the complete product experience

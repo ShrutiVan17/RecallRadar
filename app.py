@@ -44,9 +44,9 @@ st.markdown(
     [data-testid="stSidebar"] {background:#0a1625;border-right:1px solid #1b3247}
     [data-testid="stHeader"] {background:transparent}
     h1,h2,h3 {font-family:'Space Grotesk',sans-serif}
-    .hero {padding:1.8rem 0 .8rem;position:relative}
+    .hero {padding:1.35rem 0 .55rem;position:relative}
     .eyebrow {color:var(--mint);font-weight:700;letter-spacing:.13em;text-transform:uppercase;font-size:.78rem}
-    .hero h1 {font-size:clamp(3rem,7vw,5.5rem);line-height:.95;margin:.3rem 0;
+    .hero h1 {font-size:clamp(3rem,7vw,5.2rem);line-height:.95;margin:.3rem 0;
       background:linear-gradient(90deg,#fff 25%,#63e6be 70%,#91b7ff);
       -webkit-background-clip:text;color:transparent}
     .hero p {color:#b4c4d6;font-size:1.12rem;max-width:790px}
@@ -55,12 +55,14 @@ st.markdown(
     .status-dot {width:8px;height:8px;border-radius:50%;background:var(--mint);
       box-shadow:0 0 0 0 rgba(99,230,190,.7);animation:pulse 2s infinite}
 
-    .radar-wrap {display:grid;grid-template-columns:minmax(250px,390px) 1fr;gap:1.2rem;
+    .radar-wrap {display:grid;grid-template-columns:minmax(290px,410px) 1fr;gap:1.2rem;
       background:linear-gradient(135deg,rgba(14,35,52,.95),rgba(9,24,39,.92));
       border:1px solid #203d55;border-radius:24px;padding:1.3rem;margin:.8rem 0 1.5rem;
       box-shadow:0 24px 70px rgba(0,0,0,.23);overflow:hidden}
-    .radar {position:relative;width:220px;height:220px;border-radius:50%;margin:auto;
-      background:repeating-radial-gradient(circle,transparent 0 31px,rgba(99,230,190,.2) 32px 33px),
+    .radar-stage {position:relative;min-height:280px;display:grid;place-items:center}
+    .radar-halo {position:absolute;width:252px;height:252px;border:1px solid rgba(99,230,190,.15);border-radius:50%;animation:breathe 2.8s ease-in-out infinite}
+    .radar {position:relative;width:230px;height:230px;border-radius:50%;margin:auto;
+      background:repeating-radial-gradient(circle,transparent 0 32px,rgba(99,230,190,.2) 33px 34px),
       linear-gradient(90deg,transparent 49.5%,rgba(99,230,190,.18) 50%,transparent 50.5%),
       linear-gradient(transparent 49.5%,rgba(99,230,190,.18) 50%,transparent 50.5%),#0a1d2a;
       border:1px solid rgba(99,230,190,.4);box-shadow:inset 0 0 35px rgba(99,230,190,.08),0 0 35px rgba(23,120,104,.12)}
@@ -70,6 +72,12 @@ st.markdown(
     .blip {position:absolute;width:9px;height:9px;border-radius:50%;background:#ff7575;
       box-shadow:0 0 0 4px rgba(255,107,107,.12),0 0 18px #ff6b6b;animation:blip 2.1s infinite}
     .b1 {left:64%;top:31%}.b2 {left:31%;top:65%;animation-delay:.7s}.b3 {left:57%;top:72%;animation-delay:1.3s}
+    .radar-core {position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:46px;height:46px;
+      display:grid;place-items:center;border-radius:50%;background:#0d2932;border:1px solid #63e6be;color:#9af5d5;
+      font:700 .7rem 'Space Grotesk';letter-spacing:.1em;box-shadow:0 0 22px rgba(99,230,190,.35)}
+    .radar-tag {position:absolute;background:#10283a;border:1px solid #31546a;border-radius:999px;padding:.28rem .55rem;
+      font-size:.66rem;color:#bcd0dd;animation:float 3s ease-in-out infinite}
+    .tag-a{top:13px;right:5px}.tag-b{bottom:16px;left:0;animation-delay:.8s}.tag-c{top:54%;right:-12px;animation-delay:1.5s}
     .radar-copy {display:flex;flex-direction:column;justify-content:center;padding:.4rem 1rem}
     .radar-copy h2 {font-size:1.75rem;margin:.25rem 0 .5rem}
     .radar-copy p {color:var(--muted);max-width:590px;margin:.15rem 0 1rem}
@@ -77,9 +85,17 @@ st.markdown(
     .signal {background:rgba(255,255,255,.035);border:1px solid #20384e;border-radius:12px;padding:.75rem}
     .signal strong {display:block;color:white;font-size:1.05rem}.signal span{color:#87a0b7;font-size:.78rem}
 
-    .agent-flow {display:grid;grid-template-columns:repeat(4,1fr);gap:.7rem;margin:1.1rem 0 1.5rem}
+    .signal-ticker {overflow:hidden;border-top:1px solid #1e3b50;border-bottom:1px solid #1e3b50;padding:.58rem 0;margin:0 0 1.2rem;
+      color:#7fa5b8;font-size:.72rem;font-weight:700;letter-spacing:.12em;white-space:nowrap}
+    .ticker-track {display:inline-block;min-width:200%;animation:ticker 19s linear infinite}
+    .ticker-track span{color:#63e6be;margin:0 .55rem}
+
+    .agent-flow {position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:.7rem;margin:1.1rem 0 1.5rem}
+    .agent-flow:before {content:"";position:absolute;left:8%;right:8%;top:25px;height:2px;background:#20384e;overflow:hidden}
+    .agent-flow:after {content:"";position:absolute;left:8%;top:25px;height:2px;background:linear-gradient(90deg,#63e6be,#91b7ff);
+      animation:flowLine 1.8s .3s ease-out both;box-shadow:0 0 12px rgba(99,230,190,.6)}
     .flow-step {position:relative;background:#0d1c2d;border:1px solid #203a51;border-radius:14px;
-      padding:.8rem;opacity:0;transform:translateY(12px);animation:stepIn .45s forwards}
+      padding:.8rem;opacity:0;transform:translateY(12px);animation:stepIn .45s forwards;z-index:1}
     .flow-step:nth-child(2){animation-delay:.22s}.flow-step:nth-child(3){animation-delay:.44s}
     .flow-step:nth-child(4){animation-delay:.66s}
     .flow-num {display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;
@@ -91,7 +107,7 @@ st.markdown(
       border-left:5px solid var(--danger);border-radius:18px;padding:1.2rem;margin:.9rem 0;
       box-shadow:0 14px 40px rgba(0,0,0,.2);animation:cardIn .65s both}
     .score-ring {--score:90;display:grid;place-items:center;width:96px;height:96px;border-radius:50%;
-      background:conic-gradient(var(--danger) calc(var(--score)*1%),#23384b 0);position:relative;margin:auto}
+      background:conic-gradient(var(--ring,var(--danger)) calc(var(--score)*1%),#23384b 0);position:relative;margin:auto}
     .score-ring:before {content:"";position:absolute;inset:8px;border-radius:50%;background:#0d1c2d}
     .score-ring strong,.score-ring span {position:relative;z-index:1}
     .score-ring strong {font:700 1.35rem 'Space Grotesk';line-height:1}.score-ring span{font-size:.62rem;color:#a8bacb}
@@ -109,16 +125,27 @@ st.markdown(
     .source-banner.demo {background:#292318;border-color:#6c5730;color:#ffe0a3}
     .hazard {background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.2);border-radius:10px;padding:.7rem;margin:.65rem 0;color:#ffd1d1}
     .decision-state {font-weight:700;color:#9af5d5}
+    .result-banner {display:flex;align-items:center;justify-content:space-between;gap:1rem;border:1px solid #294158;
+      border-radius:16px;padding:1rem 1.15rem;margin:.8rem 0;background:linear-gradient(100deg,#102235,#0b1928);animation:resultIn .65s both}
+    .result-banner strong{font:700 1.2rem 'Space Grotesk';display:block}.result-banner span{color:#9db0c5;font-size:.84rem}
+    .result-orb {width:48px;height:48px;display:grid;place-items:center;border-radius:50%;background:rgba(99,230,190,.1);
+      border:1px solid rgba(99,230,190,.4);color:#9af5d5;animation:pulse 2s infinite}
 
     div.stButton > button {border-radius:12px;border:1px solid #39715f;transition:.25s ease}
     div.stButton > button:hover {transform:translateY(-2px);box-shadow:0 8px 25px rgba(99,230,190,.18)}
     @keyframes spin {to{transform:rotate(360deg)}}
+    @keyframes breathe {50%{transform:scale(1.08);opacity:.35}}
+    @keyframes float {50%{transform:translateY(-5px)}}
+    @keyframes ticker {to{transform:translateX(-50%)}}
+    @keyframes flowLine {from{width:0}to{width:84%}}
+    @keyframes resultIn {from{opacity:0;transform:scale(.98)}to{opacity:1;transform:none}}
     @keyframes pulse {70%{box-shadow:0 0 0 8px rgba(99,230,190,0)}100%{box-shadow:0 0 0 0 rgba(99,230,190,0)}}
     @keyframes blip {0%,100%{opacity:.25;transform:scale(.7)}50%{opacity:1;transform:scale(1.2)}}
     @keyframes stepIn {to{opacity:1;transform:none}}
     @keyframes cardIn {from{opacity:0;transform:translateX(25px)}to{opacity:1;transform:none}}
     @media(max-width:800px){.radar-wrap{grid-template-columns:1fr}.agent-flow{grid-template-columns:1fr 1fr}
       .recall-card{grid-template-columns:1fr}.signal-row{grid-template-columns:1fr}}
+    @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important}}
     </style>
     """,
     unsafe_allow_html=True,
@@ -134,8 +161,15 @@ st.markdown(
       <span class="status-pill"><span class="status-dot"></span> Human approval protects every external action</span>
     </div>
     <div class="radar-wrap">
-      <div class="radar">
-        <div class="sweep"></div><span class="blip b1"></span><span class="blip b2"></span><span class="blip b3"></span>
+      <div class="radar-stage">
+        <div class="radar-halo"></div>
+        <div class="radar">
+          <div class="sweep"></div><span class="blip b1"></span><span class="blip b2"></span><span class="blip b3"></span>
+          <div class="radar-core">SAFE</div>
+        </div>
+        <span class="radar-tag tag-a">CPSC notices</span>
+        <span class="radar-tag tag-b">model + lot</span>
+        <span class="radar-tag tag-c">approval gate</span>
       </div>
       <div class="radar-copy">
         <div class="eyebrow">Live safety signal</div>
@@ -148,22 +182,31 @@ st.markdown(
         </div>
       </div>
     </div>
+    <div class="signal-ticker"><div class="ticker-track">
+      OFFICIAL SOURCE <span>●</span> EXACT IDENTIFIERS <span>●</span> AMBIGUITY SUPPRESSED <span>●</span> HUMAN APPROVAL <span>●</span>
+      OFFICIAL SOURCE <span>●</span> EXACT IDENTIFIERS <span>●</span> AMBIGUITY SUPPRESSED <span>●</span> HUMAN APPROVAL <span>●</span>
+    </div></div>
     """,
     unsafe_allow_html=True,
 )
 
 with st.sidebar:
     st.header("Safety monitor")
-    source_label = st.radio("Recall source", ["Demo recall feed", "Live CPSC feed"])
-    source = "demo" if source_label.startswith("Demo") else "live"
+    source_label = st.radio(
+        "1 · Choose data source",
+        ["Guided demo · synthetic", "Official CPSC · live"],
+        captions=["Reliable walkthrough with visible matches", "Real government recall searches"],
+    )
+    source = "demo" if source_label.startswith("Guided") else "live"
     provider_label = st.selectbox(
-        "Agent intelligence",
-        ["Visual demo · no key", "Strands + Gemini free tier", "Strands + Amazon Bedrock"],
+        "2 · Choose reasoning engine",
+        ["Fast preview · no AI key", "Strands + Gemini free tier", "Strands + Amazon Bedrock"],
         index=1 if os.getenv("RECALLRADAR_PROVIDER", "").lower() == "gemini" else 0,
     )
-    use_strands = not provider_label.startswith("Visual")
+    use_strands = not provider_label.startswith("Fast")
     provider = "gemini" if "Gemini" in provider_label else "bedrock"
-    st.caption("No personal data is saved or submitted.")
+    st.caption("For your video: Guided demo + Strands with Gemini.")
+    st.info("Your CSV is used only during this browser session. RecallRadar never submits a claim automatically.")
     st.divider()
     st.markdown("**Agent guardrails**")
     st.write("✓ Exact identifiers first")
@@ -223,15 +266,17 @@ else:
     with st.expander("Review products before scanning", expanded=False):
         st.dataframe(preview, width="stretch", hide_index=True)
 
-if st.button("Start animated safety scan", type="primary", width="stretch", disabled=bool(preview_error)):
+scan_label = "Search official CPSC recalls" if source == "live" else "Run guided safety scan"
+if st.button(scan_label, type="primary", width="stretch", disabled=bool(preview_error)):
     with st.status("Radar is investigating product signals…", expanded=True) as status:
-        st.write("◌ Reading receipt-derived identifiers")
-        st.write("◌ Retrieving recall intelligence")
+        scan_progress = st.progress(12, text="Reading household identifiers")
+        st.write("✓ Inventory accepted")
         try:
+            scan_progress.progress(38, text="Searching selected recall source")
             matches, products = deterministic_scan(inventory_path, source)
-            st.write("◌ Rejecting ambiguous candidates")
-            st.write("◉ Building decision packets")
-            status.update(label="Scan complete — attention map updated", state="complete")
+            st.write("✓ Recall notices retrieved")
+            scan_progress.progress(68, text="Verifying model, lot, UPC, and brand evidence")
+            st.write("✓ Ambiguous candidates suppressed")
             st.session_state["matches"] = matches
             st.session_state["product_count"] = len(products)
             st.session_state["scan_source"] = source
@@ -240,8 +285,12 @@ if st.button("Start animated safety scan", type="primary", width="stretch", disa
             st.session_state.pop("agent_brief", None)
 
             if use_strands:
+                scan_progress.progress(84, text="Strands is preparing human decisions")
                 with st.spinner("Strands is generating the decision brief…"):
                     st.session_state["agent_brief"] = run_strands_scan(inventory_path, source, provider)
+            scan_progress.progress(100, text="Safety scan complete")
+            st.write("✓ Decision packets ready")
+            status.update(label="Scan complete — only actionable evidence is shown", state="complete")
         except Exception as exc:
             status.update(label="Scan could not complete", state="error")
             st.error(f"{exc}")
@@ -267,6 +316,21 @@ if matches is not None:
     c3.metric("Source", "CPSC" if st.session_state.get("scan_source") == "live" else "Synthetic")
     c4.metric("Unauthorized actions", 0)
 
+    if matches:
+        st.markdown(
+            f'<div class="result-banner"><div><strong>{len(matches)} decision{"s" if len(matches) != 1 else ""} need review</strong>'
+            '<span>Open each card to see the exact evidence and choose what happens next.</span></div>'
+            '<div class="result-orb">!</div></div>',
+            unsafe_allow_html=True,
+        )
+    else:
+        st.markdown(
+            '<div class="result-banner"><div><strong>No evidence-backed match today</strong>'
+            '<span>The monitor found nothing strong enough to interrupt you.</span></div>'
+            '<div class="result-orb">✓</div></div>',
+            unsafe_allow_html=True,
+        )
+
     if not matches:
         st.success("No evidence-backed candidate was found in this scan.")
         st.caption("This does not certify that a product is safe. Keep identifiers updated and scan again when new notices appear.")
@@ -279,11 +343,12 @@ if matches is not None:
             safe_immediate = escape(packet["immediate_action"])
             safe_remedy = escape(packet["recommended_remedy"])
             safe_hazard = escape(packet.get("hazard") or "Hazard details were not supplied by the source.")
+            risk_color = {"Critical": "#ff6b6b", "High": "#ffb454", "Moderate": "#91b7ff"}.get(match.risk, "#91b7ff")
             chips = "".join(f'<span class="chip">{escape(reason)}</span>' for reason in match.reasons)
             st.markdown(
                 f"""
-                <div class="recall-card" style="animation-delay:{index * .16}s">
-                  <div class="score-ring" style="--score:{match.confidence}">
+                <div class="recall-card" style="animation-delay:{index * .16}s;border-left-color:{risk_color}">
+                  <div class="score-ring" style="--score:{match.confidence};--ring:{risk_color}">
                     <div><strong>{match.confidence}%</strong><br><span>EVIDENCE</span></div>
                   </div>
                   <div class="card-body">
@@ -307,7 +372,11 @@ if matches is not None:
                     st.link_button("Open official CPSC notice ↗", match.recall.official_url, width="stretch")
                 else:
                     st.caption("Synthetic notice used for demonstration; there is no official recall page.")
-                st.json(packet)
+                st.markdown("**Why RecallRadar surfaced this**")
+                for reason in packet["evidence"]:
+                    st.write(f"✓ {reason}")
+                st.markdown("**Prepared message — review before using**")
+                st.code(packet["draft_message"], language=None)
                 left, right = st.columns(2)
                 if left.button("Approve prepared request", key=f"approve-{match.match_id}"):
                     st.session_state["decisions"][match.match_id] = "APPROVED FOR MANUAL ACTION"
@@ -315,6 +384,8 @@ if matches is not None:
                 if right.button("Dismiss and verify manually", key=f"dismiss-{match.match_id}"):
                     st.session_state["decisions"][match.match_id] = "DISMISSED — MANUAL VERIFICATION"
                     st.toast("Decision saved for manual verification.", icon="↗")
+                st.caption("Technical audit data")
+                st.json(packet, expanded=False)
 
         export_rows = []
         for match in matches:
@@ -347,8 +418,8 @@ if matches is not None:
         dl2.download_button("Download audit packet (JSON)", json.dumps(export_json, indent=2), "recallradar_audit.json", "application/json", width="stretch")
 
     if st.session_state.get("agent_brief"):
-        st.subheader("Strands decision brief")
-        st.write(st.session_state["agent_brief"])
+        with st.expander("How the Strands agent reached this result"):
+            st.write(st.session_state["agent_brief"])
 
 st.divider()
 st.caption(

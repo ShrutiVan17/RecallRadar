@@ -42,6 +42,10 @@ streamlit run app.py
 
 Click **Run safety scan**. Demo mode requires no AWS keys and uses synthetic household data.
 
+### Background mode
+
+Run one check with `python monitor.py --once`, or keep the agent watching with `python monitor.py --source live --interval 3600`. It stores only previously surfaced match IDs and emits new decision packets, so unchanged conditions stay quiet.
+
 ## Run with Strands + Amazon Bedrock
 
 Configure AWS credentials using the AWS CLI or your normal AWS environment. Do not paste credentials into source code.
@@ -71,15 +75,16 @@ Select **Live CPSC feed** in the sidebar. RecallRadar queries the U.S. Consumer 
 
 | Path | Purpose |
 |---|---|
-| \`app.py\` | Complete Streamlit product experience |
-| \`recallradar/agent.py\` | Strands agent and custom tools |
-| \`recallradar/core.py\` | Conservative matching and risk rules |
-| \`recallradar/sources.py\` | Demo and live CPSC recall sources |
-| \`data/\` | Synthetic, privacy-safe demo records |
-| \`tests/\` | Matching and safety-gate tests |
-| \`docs/architecture.svg\` | Submission-ready architecture diagram |
-| \`docs/DEMO_SCRIPT.md\` | Under-five-minute video script |
-| \`DEVPOST.md\` | Submission copy |
+| `app.py` | Complete Streamlit product experience |
+| `monitor.py` | Quiet recurring monitor with new-decision memory |
+| `recallradar/agent.py` | Strands agent and custom tools |
+| `recallradar/core.py` | Conservative matching and risk rules |
+| `recallradar/sources.py` | Demo and live CPSC recall sources |
+| `data/` | Synthetic, privacy-safe demo records |
+| `tests/` | Matching and safety-gate tests |
+| `docs/architecture.svg` | Submission-ready architecture diagram |
+| `docs/DEMO_SCRIPT.md` | Under-five-minute video script |
+| `DEVPOST.md` | Submission copy |
 
 ## Safety and privacy
 

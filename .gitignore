@@ -6,3 +6,4 @@ __pycache__/
 .streamlit/secrets.toml
 .DS_Store
 recallradar_actions.jsonl
+.recallradar_state.json

@@ -84,12 +84,11 @@ def deterministic_scan(inventory_path: str, source: str = "demo") -> tuple[list[
     return scan(products, recalls), products
 
 
-def run_strands_scan(inventory_path: str, source: str = "demo") -> str:
+def run_strands_scan(inventory_path: str, source: str = "demo", provider: str = "gemini") -> str:
     """Run the end-to-end workflow through a real Strands agent."""
     _STATE.clear()
     _STATE.update({"inventory_path": inventory_path, "source": source, "matches": []})
-    model_id = os.getenv("RECALLRADAR_MODEL_ID")
-
+    provider = provider.lower()
     kwargs = {
         "system_prompt": (
             "You are RecallRadar, a cautious product-safety agent. Complete the scan "
@@ -105,9 +104,23 @@ def run_strands_scan(inventory_path: str, source: str = "demo") -> str:
             prepare_recall_action,
         ],
     }
-    if model_id:
+    if provider == "gemini":
+        from strands.models.gemini import GeminiModel
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            raise RuntimeError("GEMINI_API_KEY is missing. Add it only to your terminal or hosting secrets.")
+        kwargs["model"] = GeminiModel(
+            client_args={"api_key": api_key},
+            model_id=os.getenv("RECALLRADAR_GEMINI_MODEL", "gemini-2.5-flash-lite"),
+            params={"temperature": 0.1, "max_output_tokens": 2048},
+        )
+    elif provider == "bedrock":
         from strands.models import BedrockModel
-        kwargs["model"] = BedrockModel(model_id=model_id)
+        kwargs["model"] = BedrockModel(
+            model_id=os.getenv("RECALLRADAR_MODEL_ID", "us.amazon.nova-lite-v1:0")
+        )
+    else:
+        raise ValueError("Provider must be 'gemini' or 'bedrock'.")
 
     agent = Agent(**kwargs)
     result = agent(

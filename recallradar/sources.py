@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+from datetime import date, timedelta
 from pathlib import Path
 
 import requests
@@ -41,7 +42,10 @@ def fetch_cpsc_recalls(limit: int = 75, timeout: int = 12) -> list[Recall]:
     """Fetch current public CPSC notices. The adapter tolerates sparse fields."""
     response = requests.get(
         CPSC_URL,
-        params={"format": "json"},
+        params={
+            "format": "json",
+            "RecallDateStart": (date.today() - timedelta(days=1095)).strftime("%m/%d/%Y"),
+        },
         headers={"User-Agent": "RecallRadar-Hackathon/0.1"},
         timeout=timeout,
     )

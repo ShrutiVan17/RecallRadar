@@ -1,6 +1,6 @@
 streamlit>=1.38,<2
 pandas>=2.2,<3
 requests>=2.32,<3
-strands-agents>=1.0,<2
+strands-agents[gemini]>=1.0,<2
 boto3>=1.35,<2
 pytest>=8.3,<9

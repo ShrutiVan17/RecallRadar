@@ -111,7 +111,7 @@ def run_strands_scan(inventory_path: str, source: str = "demo", provider: str = 
             raise RuntimeError("GEMINI_API_KEY is missing. Add it only to your terminal or hosting secrets.")
         kwargs["model"] = GeminiModel(
             client_args={"api_key": api_key},
-            model_id=os.getenv("RECALLRADAR_GEMINI_MODEL", "gemini-2.5-flash-lite"),
+            model_id=os.getenv("RECALLRADAR_GEMINI_MODEL", "gemini-3.5-flash-lite"),
             params={"temperature": 0.1, "max_output_tokens": 2048},
         )
     elif provider == "bedrock":

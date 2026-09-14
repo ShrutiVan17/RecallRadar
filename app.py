@@ -134,11 +134,13 @@ with st.sidebar:
     st.header("Safety monitor")
     source_label = st.radio("Recall source", ["Demo recall feed", "Live CPSC feed"])
     source = "demo" if source_label.startswith("Demo") else "live"
-    use_strands = st.toggle(
-        "Strands + Amazon Bedrock",
-        value=os.getenv("RECALLRADAR_USE_STRANDS", "0") == "1",
-        help="Requires configured AWS credentials. Visual demo mode needs no key.",
+    provider_label = st.selectbox(
+        "Agent intelligence",
+        ["Visual demo · no key", "Strands + Gemini free tier", "Strands + Amazon Bedrock"],
+        index=1 if os.getenv("RECALLRADAR_PROVIDER", "").lower() == "gemini" else 0,
     )
+    use_strands = not provider_label.startswith("Visual")
+    provider = "gemini" if "Gemini" in provider_label else "bedrock"
     st.caption("No personal data is saved or submitted.")
     st.divider()
     st.markdown("**Agent guardrails**")
@@ -175,7 +177,7 @@ if st.button("Start animated safety scan", type="primary", use_container_width=T
 
             if use_strands:
                 with st.spinner("Strands is generating the decision brief…"):
-                    st.session_state["agent_brief"] = run_strands_scan(inventory_path, source)
+                    st.session_state["agent_brief"] = run_strands_scan(inventory_path, source, provider)
         except Exception as exc:
             status.update(label="Scan could not complete", state="error")
             st.error(f"{exc}")

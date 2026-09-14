@@ -11,4 +11,5 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install -r requirements.txt
+      - run: python -m compileall app.py monitor.py recallradar tests
       - run: pytest -q

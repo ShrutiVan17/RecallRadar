@@ -580,7 +580,7 @@ if matches is not None:
 
     if matches:
         st.markdown(
-            f'<div class="result-banner"><div><strong>{len(matches)} decision{"s" if len(matches) != 1 else ""} need review</strong>'
+            f'<div class="result-banner"><div><strong>{len(matches)} decision{"s need" if len(matches) != 1 else " needs"} review</strong>'
             '<span>Open each card to see the exact evidence and choose what happens next.</span></div>'
             '<div class="result-orb">!</div></div>',
             unsafe_allow_html=True,

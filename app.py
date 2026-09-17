@@ -27,7 +27,7 @@ except Exception:
     pass
 
 
-st.set_page_config(page_title="RecallRadar", page_icon="◉", layout="wide")
+st.set_page_config(page_title="RecallRadar", page_icon="◉", layout="wide", initial_sidebar_state="collapsed")
 
 st.markdown(
     """
@@ -218,10 +218,90 @@ st.markdown(
     [data-testid="stStatusWidget"]{background:#0d1c2d!important;border:1px solid #294158!important}
     [data-testid="stStatusWidget"] *{color:#dceaf4!important}
     [data-testid="stExpander"] details{background:rgba(12,31,48,.72)!important;border-color:#294158!important}
-    @media(max-width:800px){.radar-wrap{grid-template-columns:1fr}.agent-flow{grid-template-columns:1fr 1fr}
-      .recall-card{grid-template-columns:1fr}.signal-row{grid-template-columns:1fr}
-      .simple-steps{grid-template-columns:1fr}.hero h1{font-size:clamp(2.55rem,13vw,4rem)}
-      .trust-row{display:grid;grid-template-columns:1fr}.friendly-banner{align-items:flex-start}}
+    /* Editorial product-site theme inspired by task-first public safety services */
+    .stApp:before,.stApp:after{display:none!important}
+    .stApp{background:#f4f6f1!important;color:#17302c!important}
+    [data-testid="stHeader"]{background:transparent!important}
+    [data-testid="stToolbar"],#MainMenu,footer{visibility:hidden!important}
+    .block-container{max-width:1180px!important;padding-top:1rem!important;padding-bottom:4rem!important}
+    h1,h2,h3{font-family:'Space Grotesk',sans-serif!important;color:#142b27!important}
+    p{font-family:'DM Sans',sans-serif}
+    .site-nav{display:flex;align-items:center;justify-content:space-between;padding:.8rem 0 1.2rem;border-bottom:1px solid #d8dfda;margin-bottom:3.4rem}
+    .wordmark{display:flex;align-items:center;gap:.7rem;color:#153d36;font:700 1.05rem 'Space Grotesk'}
+    .wordmark-mark{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;background:#184f45;color:#fff;font-size:.72rem}
+    .site-links{display:flex;align-items:center;gap:1.35rem;color:#59706a;font-size:.82rem}
+    .site-links a{color:#184f45;text-decoration:none;font-weight:700;border-bottom:1px solid #184f45}
+    .source-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#2b8b76;margin-right:.4rem}
+    .site-hero{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(330px,.75fr);gap:5rem;align-items:center;padding:1.5rem 0 4.4rem}
+    .kicker{color:#ad4f3d;font-size:.75rem;font-weight:800;letter-spacing:.13em;text-transform:uppercase;margin:0 0 1rem}
+    .site-hero h1{font-size:clamp(3rem,5.7vw,5.25rem)!important;line-height:1.01!important;letter-spacing:-.055em!important;
+      max-width:780px;margin:0 0 1.35rem!important;color:#142b27!important;animation:siteRise .65s both}
+    .site-hero .lead{color:#526b65;font-size:1.15rem;line-height:1.72;max-width:670px;margin:0 0 1.5rem;animation:siteRise .65s .08s both}
+    .hero-actions{display:flex;align-items:center;gap:1rem;animation:siteRise .65s .16s both}
+    .hero-link{display:inline-flex;align-items:center;justify-content:center;background:#184f45;color:#fff!important;padding:.85rem 1.1rem;
+      border-radius:8px;text-decoration:none!important;font-weight:800;font-size:.9rem;box-shadow:0 8px 20px rgba(24,79,69,.14);transition:.2s ease}
+    .hero-link:hover{background:#103d35;transform:translateY(-2px)}.hero-note{color:#6c7f7a;font-size:.82rem}
+    .preview-card{background:#fff;border:1px solid #d8dfda;border-radius:14px;padding:1.15rem;box-shadow:0 18px 55px rgba(38,62,55,.1);
+      animation:siteRise .7s .12s both}
+    .preview-head{display:flex;align-items:center;justify-content:space-between;padding:.15rem .1rem .9rem;border-bottom:1px solid #e6ebe7;
+      color:#1d3833;font-weight:800;font-size:.88rem}
+    .preview-head b{font-size:.69rem;color:#1f6c5d;background:#e6f3ee;border-radius:999px;padding:.28rem .55rem;text-transform:uppercase}
+    .preview-row{display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:.65rem;padding:.85rem .1rem;border-bottom:1px solid #edf0ed;
+      animation:rowIn .45s both}
+    .preview-row:nth-child(3){animation-delay:.16s}.preview-row:nth-child(4){animation-delay:.28s}
+    .preview-row>span{display:grid;place-items:center;width:28px;height:28px;border-radius:7px;background:#edf3ef;color:#184f45;font-size:.75rem;font-weight:800}
+    .preview-row b{display:block;color:#203a35;font-size:.82rem}.preview-row small{display:block;color:#7b8d88;font-size:.72rem;margin-top:.12rem}
+    .preview-row em{font-style:normal;color:#55706a;font-size:.7rem;font-weight:700}
+    .preview-note{display:flex;align-items:center;gap:.5rem;padding-top:.85rem;color:#5e746f;font-size:.75rem}
+    .preview-note i{width:8px;height:8px;border-radius:50%;background:#2b8b76;animation:quietPulse 2.2s infinite}
+    .value-strip{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid #d8dfda;border-bottom:1px solid #d8dfda;margin-bottom:4rem}
+    .value-item{padding:1.15rem 1.2rem;border-right:1px solid #d8dfda}.value-item:last-child{border-right:0}
+    .value-item b{display:block;color:#203a35;font-size:.83rem;margin-bottom:.25rem}.value-item span{color:#70817d;font-size:.78rem}
+    .process-wrap{margin:0 0 4rem}.section-kicker{color:#ad4f3d;font-size:.72rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+    .process-wrap h2{font-size:clamp(1.8rem,3vw,2.7rem);margin:.4rem 0 1.6rem}.process-line{display:grid;grid-template-columns:repeat(3,1fr);gap:2.2rem}
+    .process-step{position:relative;padding-top:1rem;border-top:3px solid #cfd8d3}.process-step:first-child{border-color:#184f45}
+    .process-step b{display:block;color:#203a35;font-size:1rem;margin:.6rem 0 .35rem}.process-step p{color:#6a7e78;line-height:1.55;font-size:.86rem;margin:0}
+    .process-num{color:#184f45;font:800 .74rem 'Space Grotesk'}
+    .check-panel{background:#fff;border:1px solid #d8dfda;border-radius:14px;padding:1.35rem;margin:0 0 1.2rem;box-shadow:0 10px 30px rgba(38,62,55,.06)}
+    .check-panel h2{font-size:1.65rem;margin:0 0 .35rem}.check-panel p{color:#6b7f79;margin:0}
+    .upload-copy{margin:1.7rem 0 .8rem}.upload-copy b{display:block;color:#203a35;font-size:1rem}.upload-copy span{color:#71837e;font-size:.83rem}
+    .friendly-banner,.plain-intro,.simple-steps,.radar-wrap,.signal-ticker,.brand-chip,.trust-row{display:none!important}
+    div.stButton>button[kind="primary"]{background:#184f45!important;color:#fff!important;border:1px solid #184f45!important;border-radius:8px!important;
+      box-shadow:none!important;min-height:3.1rem;font-weight:800!important}
+    div.stButton>button[kind="primary"]:hover{background:#103d35!important;transform:none!important;box-shadow:none!important}
+    [data-testid="stFileUploaderDropzone"]{background:#f8faf7!important;border:1px dashed #9eb0a8!important;border-radius:10px!important}
+    [data-testid="stFileUploaderDropzone"] p,[data-testid="stFileUploaderDropzone"] small,[data-testid="stFileUploaderDropzone"] span{color:#415b55!important}
+    [data-testid="stFileUploaderDropzone"] button{background:#e2ebe6!important;border:1px solid #b9c9c1!important}
+    [data-testid="stFileUploaderDropzone"] button *{color:#17302c!important}
+    [data-testid="stDownloadButton"] button,.stDownloadButton button{background:#fff!important;border:1px solid #9eb0a8!important;border-radius:8px!important}
+    [data-testid="stDownloadButton"] button *,.stDownloadButton button *{color:#184f45!important}
+    [data-testid="stMetric"]{background:#fff;border:1px solid #dfe5e1;border-radius:10px;padding:.8rem}
+    [data-testid="stMetricLabel"] *{color:#6b7f79!important}[data-testid="stMetricValue"] *{color:#17302c!important}
+    [data-testid="stStatusWidget"]{background:#f1f6f3!important;border:1px solid #c9d8d1!important}[data-testid="stStatusWidget"] *{color:#17302c!important}
+    [data-testid="stExpander"] details{background:#fff!important;border-color:#d8dfda!important}[data-testid="stExpander"] *{color:#29443e!important}
+    .source-banner{background:#eef5f1!important;border:1px solid #cadbd3!important;color:#31584f!important}
+    .source-banner.demo{background:#faf4e8!important;border-color:#e4d2ab!important;color:#705a2f!important}
+    .agent-flow:before{background:#d9e1dc}.agent-flow:after{background:#2b8b76;box-shadow:none}
+    .flow-step{background:#fff!important;border:1px solid #d8dfda!important;border-radius:10px!important}.flow-step b{color:#203a35}
+    .flow-step small{color:#748681}.flow-num{background:#e5f1ec!important;color:#184f45!important}
+    .result-banner{background:#fff!important;border:1px solid #d8dfda!important;border-radius:12px!important;box-shadow:none!important}
+    .result-banner strong{color:#203a35}.result-banner span{color:#6a7e78}.result-orb{background:#e7f2ed!important;border-color:#a8c7b9!important;color:#184f45!important}
+    .recall-card{background:#fff!important;border:1px solid #d8dfda!important;border-left:5px solid var(--danger)!important;border-radius:12px!important;
+      box-shadow:0 10px 28px rgba(38,62,55,.07)!important}
+    .card-body h3{color:#203a35!important}.muted{color:#6a7e78!important}.score-ring:before{background:#fff!important}
+    .score-ring strong{color:#203a35}.score-ring span{color:#6b7f79}.chip{border-color:#c8d5cf!important;color:#405d56!important;background:#f7faf8}
+    .hazard{background:#fff3ef!important;border-color:#efc8bd!important;color:#733b2f!important}
+    .action-box{background:#f3f7f4!important;color:#29443e!important}.action-box b{color:#184f45!important}.eyebrow{color:#ad4f3d!important}
+    .stAlert{border-radius:10px!important}
+    @keyframes siteRise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+    @keyframes rowIn{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:none}}
+    @keyframes quietPulse{70%{box-shadow:0 0 0 7px rgba(43,139,118,0)}100%{box-shadow:0 0 0 0 rgba(43,139,118,0)}}
+
+    @media(max-width:800px){.agent-flow{grid-template-columns:1fr 1fr}.recall-card{grid-template-columns:1fr}
+      .site-nav{margin-bottom:2rem}.site-links span{display:none}.site-hero{grid-template-columns:1fr;gap:2rem;padding-bottom:3rem}
+      .site-hero h1{font-size:clamp(2.65rem,13vw,4.2rem)!important}.hero-actions{align-items:flex-start;flex-direction:column}
+      .value-strip,.process-line{grid-template-columns:1fr}.value-item{border-right:0;border-bottom:1px solid #d8dfda}
+      .value-item:last-child{border-bottom:0}.process-step{margin-bottom:.8rem}}
     @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important}}
     </style>
     """,
@@ -230,85 +310,71 @@ st.markdown(
 
 st.markdown(
     """
-    <div class="hero">
-      <div class="brand-chip"><span class="brand-orb"></span> RecallRadar · product safety made simple</div>
-      <h1>Know when something you own is recalled.</h1>
-      <p class="hero-lead">Add a simple list of products. RecallRadar checks recall notices,
-      matches the important details, and tells you what to do next in plain language.</p>
-      <div class="trust-row">
-        <div class="trust-pill"><i></i>No account needed for the demo</div>
-        <div class="trust-pill"><i></i>Checks exact model and lot details</div>
-        <div class="trust-pill"><i></i>You approve every action</div>
+    <div class="site-nav">
+      <div class="wordmark"><span class="wordmark-mark">RR</span> RecallRadar</div>
+      <div class="site-links">
+        <span><i class="source-dot"></i>Uses official CPSC recall notices</span>
+        <a href="https://github.com/ShrutiVan17/RecallRadar" target="_blank">View source</a>
       </div>
     </div>
-    <div class="radar-wrap">
-      <div class="radar-stage">
-        <div class="radar-halo"></div>
-        <div class="radar">
-          <div class="sweep"></div><span class="blip b1"></span><span class="blip b2"></span><span class="blip b3"></span>
-          <div class="radar-core">CHECK</div>
-        </div>
-        <span class="radar-tag tag-a">official notices</span>
-        <span class="radar-tag tag-b">your product</span>
-        <span class="radar-tag tag-c">your decision</span>
+    <section class="site-hero">
+      <div>
+        <p class="kicker">Personal product-safety monitor</p>
+        <h1>Check the products you own. Know what to do next.</h1>
+        <p class="lead">RecallRadar compares your product details with recall notices, filters out weak matches, and gives you a clear next step to review.</p>
+        <div class="hero-actions"><a class="hero-link" href="#check-products">Check example products</a><span class="hero-note">Free demo · No account required</span></div>
       </div>
-      <div class="radar-copy">
-        <div class="eyebrow">Simple on the surface · careful underneath</div>
-        <h2>It checks the details people often miss</h2>
-        <p>Product names can look alike. RecallRadar compares model, lot, barcode, brand, and product details before showing an alert.</p>
-        <div class="signal-row">
-          <div class="signal"><strong>Check</strong><span>official recall notices</span></div>
-          <div class="signal"><strong>Compare</strong><span>exact product details</span></div>
-          <div class="signal"><strong>Explain</strong><span>the safest next step</span></div>
-        </div>
+      <div class="preview-card">
+        <div class="preview-head"><span>Product safety check</span><b>Ready</b></div>
+        <div class="preview-row"><span>01</span><div><b>Add a product list</b><small>Name, model, lot or barcode</small></div><em>Input</em></div>
+        <div class="preview-row"><span>02</span><div><b>Compare recall notices</b><small>Exact identifiers are checked first</small></div><em>Check</em></div>
+        <div class="preview-row"><span>03</span><div><b>Review the next step</b><small>Evidence, remedy and official source</small></div><em>Decide</em></div>
+        <div class="preview-note"><i></i>Nothing happens without your approval</div>
       </div>
+    </section>
+    <div class="value-strip">
+      <div class="value-item"><b>Evidence before alerts</b><span>Weak or uncertain matches stay hidden.</span></div>
+      <div class="value-item"><b>Official source links</b><span>Every live result points back to the notice.</span></div>
+      <div class="value-item"><b>Plain-language guidance</b><span>See what happened and what to do next.</span></div>
     </div>
-    <div class="signal-ticker"><div class="ticker-track">
-      ADD YOUR PRODUCTS <span>●</span> CHECK OFFICIAL NOTICES <span>●</span> VERIFY THE DETAILS <span>●</span> CHOOSE WHAT HAPPENS NEXT <span>●</span>
-      ADD YOUR PRODUCTS <span>●</span> CHECK OFFICIAL NOTICES <span>●</span> VERIFY THE DETAILS <span>●</span> CHOOSE WHAT HAPPENS NEXT <span>●</span>
-    </div></div>
-    <div class="plain-intro">
-      <div class="eyebrow">How it works</div>
-      <h2>Three steps. No technical knowledge needed.</h2>
-      <p>Use the example products first. When you are ready, upload your own simple CSV list.</p>
-    </div>
-    <div class="simple-steps">
-      <div class="simple-card"><span class="step-badge">STEP 01</span><div class="simple-icon">📦</div><b>Add your products</b><p>Start with the ready-made example or upload a list with product names and model numbers.</p></div>
-      <div class="simple-card"><span class="step-badge">STEP 02</span><div class="simple-icon">🔎</div><b>RecallRadar checks</b><p>It searches recall notices and compares the exact details so similar names do not create panic.</p></div>
-      <div class="simple-card"><span class="step-badge">STEP 03</span><div class="simple-icon">✓</div><b>You get a clear answer</b><p>See why a product was flagged, what to do now, and the official notice before deciding.</p></div>
-    </div>
+    <section class="process-wrap">
+      <span class="section-kicker">How it works</span><h2>One careful check, from product list to decision.</h2>
+      <div class="process-line">
+        <div class="process-step"><span class="process-num">01</span><b>Add products</b><p>Use the example list or upload a CSV with the details you have.</p></div>
+        <div class="process-step"><span class="process-num">02</span><b>Verify matches</b><p>RecallRadar checks official notices and compares exact identifiers.</p></div>
+        <div class="process-step"><span class="process-num">03</span><b>Review the action</b><p>Read the evidence, open the official notice, and choose what happens next.</p></div>
+      </div>
+    </section>
     """,
     unsafe_allow_html=True,
 )
 
-with st.sidebar:
-    st.header("Start here")
+st.markdown(
+    '<div id="check-products" class="check-panel"><span class="section-kicker">Start a check</span>'
+    '<h2>Choose how you want to try RecallRadar</h2><p>The example list is the fastest way to see a complete result.</p></div>',
+    unsafe_allow_html=True,
+)
+control_a, control_b = st.columns(2)
+with control_a:
     source_label = st.radio(
-        "1 · What would you like to check?",
-        ["Try the example products", "Check official recalls"],
-        captions=["Best choice for a quick walkthrough", "Search the live U.S. CPSC database"],
+        "Product source",
+        ["Example products", "Official CPSC search"],
+        captions=["Reliable walkthrough with visible matches", "Search live government notices"],
+        horizontal=True,
     )
-    source = "demo" if source_label.startswith("Try") else "live"
+with control_b:
     provider_label = st.selectbox(
-        "2 · Choose how it runs",
-        ["Quick demo · recommended", "AI assistant · Gemini", "AI assistant · Amazon Bedrock"],
+        "Processing mode",
+        ["Standard check · recommended", "AI explanation · Gemini", "AI explanation · Amazon Bedrock"],
         index=0,
     )
-    use_strands = provider_label.startswith("AI")
-    provider = "gemini" if "Gemini" in provider_label else "bedrock"
-    st.caption("New here? Keep the recommended choices and press the main button.")
-    st.info("Your uploaded list stays in this browser session. Nothing is sent to a company automatically.")
-    st.divider()
-    st.markdown("**How RecallRadar keeps you safe**")
-    st.write("✓ Checks exact product details")
-    st.write("✓ Hides weak or uncertain matches")
-    st.write("✓ Links to the official notice")
-    st.write("✓ Waits for your approval")
-
-st.subheader("Ready to check your products?")
+source = "demo" if source_label.startswith("Example") else "live"
+use_strands = provider_label.startswith("AI")
+provider = "gemini" if "Gemini" in provider_label else "bedrock"
+st.caption("Standard check is fastest and does not require an AI key. Uploaded data remains in this browser session.")
 st.markdown(
-    '<div class="friendly-banner"><div class="face">👋</div><div><b>First time here?</b><br>'
-    '<span>Use the example products. It takes one click and shows exactly how RecallRadar works.</span></div></div>',
+    '<div class="upload-copy"><b>Optional: upload your own product list</b>'
+    '<span>Use a CSV file with product names. Model, lot, or barcode details make matching more reliable.</span></div>',
     unsafe_allow_html=True,
 )
 
@@ -358,7 +424,7 @@ else:
     with st.expander("Review products before scanning", expanded=False):
         st.dataframe(preview, width="stretch", hide_index=True)
 
-scan_label = "Check the official recall database" if source == "live" else "Show me how RecallRadar works"
+scan_label = "Search official CPSC notices" if source == "live" else "Check the example products"
 if st.button(scan_label, type="primary", width="stretch", disabled=bool(preview_error)):
     with st.status("Radar is investigating product signals…", expanded=True) as status:
         scan_progress = st.progress(12, text="Reading household identifiers")

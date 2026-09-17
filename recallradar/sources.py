@@ -124,7 +124,9 @@ def _fetch_cpsc_query(query_items: tuple[tuple[str, str], ...], limit: int, time
 
 def _clean_cpsc_text(value: object) -> str:
     text = html.unescape(str(value or ""))
-    return re.sub(r"<[^>]+>", " ", text).replace("\xa0", " ").strip()
+    text = re.sub(r"https?://(?:www\.)?cpsc\.gov/\S+", " ", text)
+    text = re.sub(r'\s*lang="[^"]*">', " ", text)
+    return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", text)).replace("\xa0", " ").strip()
 
 
 @lru_cache(maxsize=1)

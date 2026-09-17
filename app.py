@@ -297,6 +297,12 @@ st.markdown(
     @keyframes rowIn{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:none}}
     @keyframes quietPulse{70%{box-shadow:0 0 0 7px rgba(43,139,118,0)}100%{box-shadow:0 0 0 0 rgba(43,139,118,0)}}
 
+    .live-search-panel{background:#e9f2ee;border:1px solid #c4d8cf;border-radius:12px;padding:1.15rem 1.2rem;margin:1.5rem 0 1rem}
+    .live-search-panel b{display:block;color:#173d35;font-size:1.05rem;margin-bottom:.25rem}
+    .live-search-panel span{color:#58706a;font-size:.86rem;line-height:1.5}
+    [data-testid="stTextInput"] input{background:#fff!important;color:#17302c!important;border-color:#aebeb7!important}
+    [data-testid="stTextInput"] input::placeholder{color:#8b9b96!important}
+    [data-testid="stTextInput"] label p{color:#425d56!important;font-weight:700!important}
     @media(max-width:800px){.agent-flow{grid-template-columns:1fr 1fr}.recall-card{grid-template-columns:1fr}
       .site-nav{margin-bottom:2rem}.site-links span{display:none}.site-hero{grid-template-columns:1fr;gap:2rem;padding-bottom:3rem}
       .site-hero h1{font-size:clamp(2.65rem,13vw,4.2rem)!important}.hero-actions{align-items:flex-start;flex-direction:column}
@@ -372,38 +378,113 @@ source = "demo" if source_label.startswith("Example") else "live"
 use_strands = provider_label.startswith("AI")
 provider = "gemini" if "Gemini" in provider_label else "bedrock"
 st.caption("Standard check is fastest and does not require an AI key. Uploaded data remains in this browser session.")
-st.markdown(
-    '<div class="upload-copy"><b>Optional: upload your own product list</b>'
-    '<span>Use a CSV file with product names. Model, lot, or barcode details make matching more reliable.</span></div>',
-    unsafe_allow_html=True,
-)
+uploaded = None
+manual_name = ""
+manual_brand = ""
+manual_model = ""
+manual_lot = ""
+manual_upc = ""
 
-upload_col, template_col = st.columns([3, 1])
-with upload_col:
-    uploaded = st.file_uploader("Household inventory CSV", type=["csv"], help="Accepted fields include name/product_name, brand, model, lot, UPC, purchase date, and retailer.")
-with template_col:
-    st.caption("Need the correct format?")
-    st.download_button(
-        "Download CSV template",
-        data=open("data/demo_inventory.csv", "rb").read(),
-        file_name="recallradar_inventory_template.csv",
-        mime="text/csv",
-        width="stretch",
+if source == "live":
+    st.markdown(
+        '<div class="live-search-panel"><b>Search the live U.S. CPSC recall database</b>'
+        '<span>Enter the product information printed on the item, label, packaging, or receipt. '
+        'A model, lot, or barcode gives the most reliable result.</span></div>',
+        unsafe_allow_html=True,
     )
+    name_col, brand_col = st.columns([2, 1])
+    with name_col:
+        manual_name = st.text_input("Product name", placeholder="Example: digital air fryer")
+    with brand_col:
+        manual_brand = st.text_input("Brand", placeholder="Example: NorthStar")
+    model_col, lot_col, upc_col = st.columns(3)
+    with model_col:
+        manual_model = st.text_input("Model number", placeholder="Example: AF-900")
+    with lot_col:
+        manual_lot = st.text_input("Lot number", placeholder="Optional")
+    with upc_col:
+        manual_upc = st.text_input("UPC or barcode", placeholder="Optional")
 
-inventory_path = "data/demo_inventory.csv"
+    with st.expander("Check several products with a CSV instead"):
+        uploaded = st.file_uploader(
+            "Product inventory CSV",
+            type=["csv"],
+            help="Accepted fields include name/product_name, brand, model, lot, UPC, purchase date, and retailer.",
+            key="live_inventory_upload",
+        )
+        st.download_button(
+            "Download CSV template",
+            data=open("data/demo_inventory.csv", "rb").read(),
+            file_name="recallradar_inventory_template.csv",
+            mime="text/csv",
+            width="stretch",
+            key="live_template",
+        )
+else:
+    st.markdown(
+        '<div class="upload-copy"><b>Optional: use your own product list</b>'
+        '<span>Leave this empty to run the prepared example. Upload a CSV only when you want to test your own records.</span></div>',
+        unsafe_allow_html=True,
+    )
+    upload_col, template_col = st.columns([3, 1])
+    with upload_col:
+        uploaded = st.file_uploader(
+            "Product inventory CSV",
+            type=["csv"],
+            help="Accepted fields include name/product_name, brand, model, lot, UPC, purchase date, and retailer.",
+            key="demo_inventory_upload",
+        )
+    with template_col:
+        st.caption("Need the correct format?")
+        st.download_button(
+            "Download CSV template",
+            data=open("data/demo_inventory.csv", "rb").read(),
+            file_name="recallradar_inventory_template.csv",
+            mime="text/csv",
+            width="stretch",
+            key="demo_template",
+        )
+
+inventory_path = "data/demo_inventory.csv" if source == "demo" else ""
 preview_error = None
+products_preview = []
+preview = pd.DataFrame()
 try:
     if uploaded:
         temp = tempfile.NamedTemporaryFile(delete=False, suffix=".csv")
         temp.write(uploaded.getvalue())
         temp.close()
         inventory_path = temp.name
-    products_preview = load_inventory(inventory_path)
-    preview = pd.DataFrame([asdict(product) for product in products_preview])
+    elif source == "live" and manual_name.strip():
+        temp = tempfile.NamedTemporaryFile(delete=False, suffix=".csv")
+        temp.close()
+        pd.DataFrame([{
+            "name": manual_name.strip(),
+            "brand": manual_brand.strip(),
+            "model": manual_model.strip(),
+            "lot": manual_lot.strip(),
+            "upc": manual_upc.strip(),
+        }]).to_csv(temp.name, index=False)
+        inventory_path = temp.name
+
+    if inventory_path:
+        products_preview = load_inventory(inventory_path)
+        preview = pd.DataFrame([asdict(product) for product in products_preview])
 except Exception as exc:
     products_preview, preview = [], pd.DataFrame()
     preview_error = str(exc)
+
+query_signature = json.dumps(
+    {
+        "source": source,
+        "provider": provider_label,
+        "products": [asdict(product) for product in products_preview],
+    },
+    sort_keys=True,
+)
+if st.session_state.get("visible_query_signature") != query_signature:
+    for stale_key in ("matches", "product_count", "scan_source", "scan_time", "decisions", "agent_brief", "agent_error"):
+        st.session_state.pop(stale_key, None)
 
 if source == "live":
     st.markdown('<div class="source-banner"><b>LIVE MODE</b> · Searches the official U.S. CPSC Recall API using each product model or name. Results depend on agency coverage.</div>', unsafe_allow_html=True)
@@ -412,20 +493,23 @@ else:
 
 if preview_error:
     st.error(preview_error)
+elif source == "live" and not products_preview:
+    st.info("Enter a product name above, or upload a CSV, to start a live CPSC search.")
 else:
     identifier_ready = sum(bool(item.model or item.lot or item.upc) for item in products_preview)
     duplicates = int(preview["product_id"].duplicated().sum()) if not preview.empty else 0
     q1, q2, q3 = st.columns(3)
-    q1.metric("Products loaded", len(products_preview))
-    q2.metric("Identifier-ready", f"{identifier_ready}/{len(products_preview)}")
-    q3.metric("Duplicate IDs", duplicates)
+    q1.metric("Products ready", len(products_preview))
+    q2.metric("With exact identifiers", f"{identifier_ready}/{len(products_preview)}")
+    q3.metric("Duplicate records", duplicates)
     if identifier_ready < len(products_preview):
-        st.warning("Some products have no model, lot, or UPC. RecallRadar will search them, but it suppresses weak matches to avoid false alarms.")
-    with st.expander("Review products before scanning", expanded=False):
+        st.warning("Add a model, lot, or UPC when possible. Name-only searches are broader, and weak matches will be hidden.")
+    with st.expander("Review the product details being searched", expanded=False):
         st.dataframe(preview, width="stretch", hide_index=True)
 
-scan_label = "Search official CPSC notices" if source == "live" else "Check the example products"
-if st.button(scan_label, type="primary", width="stretch", disabled=bool(preview_error)):
+scan_label = "Search live CPSC notices" if source == "live" else "Check the example products"
+scan_disabled = bool(preview_error) or not products_preview
+if st.button(scan_label, type="primary", width="stretch", disabled=scan_disabled):
     with st.status("Radar is investigating product signals…", expanded=True) as status:
         scan_progress = st.progress(12, text="Reading household identifiers")
         st.write("✓ Inventory accepted")
@@ -439,6 +523,7 @@ if st.button(scan_label, type="primary", width="stretch", disabled=bool(preview_
             st.session_state["product_count"] = len(products)
             st.session_state["scan_source"] = source
             st.session_state["scan_time"] = datetime.now(timezone.utc).isoformat()
+            st.session_state["visible_query_signature"] = query_signature
             st.session_state["decisions"] = {}
             st.session_state.pop("agent_brief", None)
             st.session_state.pop("agent_error", None)

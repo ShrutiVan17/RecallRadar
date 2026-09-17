@@ -143,8 +143,71 @@ st.markdown(
     @keyframes blip {0%,100%{opacity:.25;transform:scale(.7)}50%{opacity:1;transform:scale(1.2)}}
     @keyframes stepIn {to{opacity:1;transform:none}}
     @keyframes cardIn {from{opacity:0;transform:translateX(25px)}to{opacity:1;transform:none}}
+    /* Recruiter-ready, plain-language visual layer */
+    .stApp:before,.stApp:after{content:"";position:fixed;border-radius:999px;filter:blur(70px);
+      pointer-events:none;z-index:0;opacity:.22}
+    .stApp:before{width:360px;height:360px;background:#2dd4bf;top:-120px;right:8%;animation:orbA 12s ease-in-out infinite}
+    .stApp:after{width:310px;height:310px;background:#617cff;bottom:-120px;left:18%;animation:orbB 15s ease-in-out infinite}
+    section.main>div{position:relative;z-index:1}
+    [data-testid="stSidebar"]{background:linear-gradient(180deg,#0c1d31 0%,#071522 100%)!important;
+      border-right:1px solid rgba(99,230,190,.22)!important}
+    [data-testid="stSidebar"] h1,[data-testid="stSidebar"] h2,[data-testid="stSidebar"] h3,
+    [data-testid="stSidebar"] p,[data-testid="stSidebar"] label{color:#eaf4ff!important}
+    [data-testid="stSidebar"] small{color:#9fb6c9!important}
+    [data-testid="stSidebar"] [data-baseweb="select"] *{color:#102235!important}
+    [data-testid="stSidebar"] .stAlert{background:rgba(43,127,255,.12)!important;border:1px solid rgba(93,164,255,.25)}
+    [data-testid="stSidebar"] .stAlert p{color:#cfe4ff!important}
+
+    .brand-chip{display:inline-flex;align-items:center;gap:.55rem;padding:.42rem .75rem;border-radius:999px;
+      border:1px solid rgba(99,230,190,.35);background:rgba(99,230,190,.08);color:#9af5d5;
+      font:700 .78rem 'Space Grotesk';letter-spacing:.08em;text-transform:uppercase;animation:heroIn .65s both}
+    .brand-orb{width:9px;height:9px;border-radius:50%;background:#63e6be;box-shadow:0 0 16px #63e6be;animation:pulse 2s infinite}
+    .hero h1{max-width:900px;font-size:clamp(2.8rem,6.3vw,5.6rem);letter-spacing:-.055em;
+      animation:heroIn .75s .08s both}
+    .hero .hero-lead{font-size:clamp(1.05rem,2vw,1.28rem);line-height:1.7;max-width:760px;
+      color:#c0d1e1;animation:heroIn .75s .16s both}
+    .trust-row{display:flex;flex-wrap:wrap;gap:.65rem;margin:1.15rem 0 .2rem;animation:heroIn .75s .24s both}
+    .trust-pill{display:flex;align-items:center;gap:.45rem;padding:.5rem .76rem;border-radius:12px;
+      background:rgba(255,255,255,.045);border:1px solid rgba(145,183,255,.18);color:#dce9f5;font-size:.82rem}
+    .trust-pill i{width:8px;height:8px;border-radius:50%;display:inline-block}
+    .trust-pill:nth-child(1) i{background:#63e6be}.trust-pill:nth-child(2) i{background:#91b7ff}.trust-pill:nth-child(3) i{background:#ffbe6b}
+
+    .plain-intro{text-align:center;margin:2rem auto 1rem;max-width:760px}
+    .plain-intro .eyebrow{margin-bottom:.35rem}.plain-intro h2{font-size:clamp(1.8rem,3vw,2.55rem);margin:.2rem 0}
+    .plain-intro p{color:#9fb3c7;font-size:1rem}
+    .simple-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:1rem 0 2rem}
+    .simple-card{position:relative;overflow:hidden;background:linear-gradient(145deg,rgba(18,43,64,.95),rgba(10,27,43,.92));
+      border:1px solid rgba(102,180,200,.22);border-radius:20px;padding:1.25rem;min-height:180px;
+      box-shadow:0 18px 45px rgba(0,0,0,.18);animation:cardRise .65s both;transition:.28s ease}
+    .simple-card:nth-child(2){animation-delay:.12s}.simple-card:nth-child(3){animation-delay:.24s}
+    .simple-card:hover{transform:translateY(-7px);border-color:rgba(99,230,190,.55);box-shadow:0 24px 55px rgba(0,0,0,.25)}
+    .simple-card:after{content:"";position:absolute;width:110px;height:110px;border-radius:50%;right:-42px;bottom:-55px;
+      background:var(--card-glow,#63e6be);filter:blur(34px);opacity:.14}
+    .simple-card:nth-child(2){--card-glow:#91b7ff}.simple-card:nth-child(3){--card-glow:#ff9f7f}
+    .simple-icon{width:48px;height:48px;display:grid;place-items:center;border-radius:15px;margin-bottom:1rem;
+      background:rgba(99,230,190,.1);border:1px solid rgba(99,230,190,.24);font-size:1.35rem;animation:iconFloat 3s ease-in-out infinite}
+    .simple-card:nth-child(2) .simple-icon{animation-delay:.4s}.simple-card:nth-child(3) .simple-icon{animation-delay:.8s}
+    .simple-card b{display:block;color:#fff;font:700 1.15rem 'Space Grotesk';margin-bottom:.4rem}
+    .simple-card p{color:#a9bdcf;line-height:1.55;margin:0;font-size:.91rem}
+    .step-badge{position:absolute;right:1rem;top:1rem;color:#648096;font:700 .72rem 'Space Grotesk';letter-spacing:.1em}
+    .friendly-banner{display:flex;align-items:center;gap:.9rem;margin:.5rem 0 1.3rem;padding:1rem 1.1rem;
+      border-radius:16px;background:linear-gradient(90deg,rgba(99,230,190,.11),rgba(145,183,255,.08));
+      border:1px solid rgba(99,230,190,.25);animation:softGlow 4s ease-in-out infinite}
+    .friendly-banner .face{font-size:1.6rem}.friendly-banner b{color:#fff}.friendly-banner span{color:#a9bdcf;font-size:.9rem}
+    div.stButton>button[kind="primary"]{background:linear-gradient(90deg,#2dd4bf,#5f8dff)!important;color:#06131f!important;
+      border:0!important;font-weight:800!important;min-height:3.2rem;box-shadow:0 12px 30px rgba(45,212,191,.2)}
+    div.stButton>button[kind="primary"]:hover{box-shadow:0 16px 40px rgba(45,212,191,.34);transform:translateY(-3px)}
+    @keyframes heroIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+    @keyframes cardRise{from{opacity:0;transform:translateY(24px) scale(.98)}to{opacity:1;transform:none}}
+    @keyframes iconFloat{50%{transform:translateY(-6px) rotate(3deg)}}
+    @keyframes softGlow{50%{border-color:rgba(145,183,255,.42);box-shadow:0 0 30px rgba(99,230,190,.08)}}
+    @keyframes orbA{50%{transform:translate(-90px,80px) scale(1.15)}}
+    @keyframes orbB{50%{transform:translate(110px,-70px) scale(.86)}}
+
     @media(max-width:800px){.radar-wrap{grid-template-columns:1fr}.agent-flow{grid-template-columns:1fr 1fr}
-      .recall-card{grid-template-columns:1fr}.signal-row{grid-template-columns:1fr}}
+      .recall-card{grid-template-columns:1fr}.signal-row{grid-template-columns:1fr}
+      .simple-steps{grid-template-columns:1fr}.hero h1{font-size:clamp(2.55rem,13vw,4rem)}
+      .trust-row{display:grid;grid-template-columns:1fr}.friendly-banner{align-items:flex-start}}
     @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important}}
     </style>
     """,
@@ -154,71 +217,86 @@ st.markdown(
 st.markdown(
     """
     <div class="hero">
-      <div class="eyebrow">Always watching · rarely interrupting</div>
-      <h1>RecallRadar</h1>
-      <p>Your purchases become a living safety inventory. The agent monitors recall signals,
-      verifies exact identifiers, and surfaces only decisions that genuinely need you.</p>
-      <span class="status-pill"><span class="status-dot"></span> Human approval protects every external action</span>
+      <div class="brand-chip"><span class="brand-orb"></span> RecallRadar · product safety made simple</div>
+      <h1>Know when something you own is recalled.</h1>
+      <p class="hero-lead">Add a simple list of products. RecallRadar checks recall notices,
+      matches the important details, and tells you what to do next in plain language.</p>
+      <div class="trust-row">
+        <div class="trust-pill"><i></i>No account needed for the demo</div>
+        <div class="trust-pill"><i></i>Checks exact model and lot details</div>
+        <div class="trust-pill"><i></i>You approve every action</div>
+      </div>
     </div>
     <div class="radar-wrap">
       <div class="radar-stage">
         <div class="radar-halo"></div>
         <div class="radar">
           <div class="sweep"></div><span class="blip b1"></span><span class="blip b2"></span><span class="blip b3"></span>
-          <div class="radar-core">SAFE</div>
+          <div class="radar-core">CHECK</div>
         </div>
-        <span class="radar-tag tag-a">CPSC notices</span>
-        <span class="radar-tag tag-b">model + lot</span>
-        <span class="radar-tag tag-c">approval gate</span>
+        <span class="radar-tag tag-a">official notices</span>
+        <span class="radar-tag tag-b">your product</span>
+        <span class="radar-tag tag-c">your decision</span>
       </div>
       <div class="radar-copy">
-        <div class="eyebrow">Live safety signal</div>
-        <h2>Quiet protection in the background</h2>
-        <p>Receipt records become searchable evidence. Weak signals disappear; exact model and lot matches become clear actions.</p>
+        <div class="eyebrow">Simple on the surface · careful underneath</div>
+        <h2>It checks the details people often miss</h2>
+        <p>Product names can look alike. RecallRadar compares model, lot, barcode, brand, and product details before showing an alert.</p>
         <div class="signal-row">
-          <div class="signal"><strong>Exact-first</strong><span>model + lot evidence</span></div>
-          <div class="signal"><strong>Silent</strong><span>until risk changes</span></div>
-          <div class="signal"><strong>Human-safe</strong><span>approval before action</span></div>
+          <div class="signal"><strong>Check</strong><span>official recall notices</span></div>
+          <div class="signal"><strong>Compare</strong><span>exact product details</span></div>
+          <div class="signal"><strong>Explain</strong><span>the safest next step</span></div>
         </div>
       </div>
     </div>
     <div class="signal-ticker"><div class="ticker-track">
-      OFFICIAL SOURCE <span>●</span> EXACT IDENTIFIERS <span>●</span> AMBIGUITY SUPPRESSED <span>●</span> HUMAN APPROVAL <span>●</span>
-      OFFICIAL SOURCE <span>●</span> EXACT IDENTIFIERS <span>●</span> AMBIGUITY SUPPRESSED <span>●</span> HUMAN APPROVAL <span>●</span>
+      ADD YOUR PRODUCTS <span>●</span> CHECK OFFICIAL NOTICES <span>●</span> VERIFY THE DETAILS <span>●</span> CHOOSE WHAT HAPPENS NEXT <span>●</span>
+      ADD YOUR PRODUCTS <span>●</span> CHECK OFFICIAL NOTICES <span>●</span> VERIFY THE DETAILS <span>●</span> CHOOSE WHAT HAPPENS NEXT <span>●</span>
     </div></div>
+    <div class="plain-intro">
+      <div class="eyebrow">How it works</div>
+      <h2>Three steps. No technical knowledge needed.</h2>
+      <p>Use the example products first. When you are ready, upload your own simple CSV list.</p>
+    </div>
+    <div class="simple-steps">
+      <div class="simple-card"><span class="step-badge">STEP 01</span><div class="simple-icon">📦</div><b>Add your products</b><p>Start with the ready-made example or upload a list with product names and model numbers.</p></div>
+      <div class="simple-card"><span class="step-badge">STEP 02</span><div class="simple-icon">🔎</div><b>RecallRadar checks</b><p>It searches recall notices and compares the exact details so similar names do not create panic.</p></div>
+      <div class="simple-card"><span class="step-badge">STEP 03</span><div class="simple-icon">✓</div><b>You get a clear answer</b><p>See why a product was flagged, what to do now, and the official notice before deciding.</p></div>
+    </div>
     """,
     unsafe_allow_html=True,
 )
 
 with st.sidebar:
-    st.header("Safety monitor")
+    st.header("Start here")
     source_label = st.radio(
-        "1 · Choose data source",
-        ["Guided demo · synthetic", "Official CPSC · live"],
-        captions=["Reliable walkthrough with visible matches", "Real government recall searches"],
+        "1 · What would you like to check?",
+        ["Try the example products", "Check official recalls"],
+        captions=["Best choice for a quick walkthrough", "Search the live U.S. CPSC database"],
     )
-    source = "demo" if source_label.startswith("Guided") else "live"
+    source = "demo" if source_label.startswith("Try") else "live"
     provider_label = st.selectbox(
-        "2 · Choose reasoning engine",
-        ["Fast preview · no AI key", "Strands + Gemini free tier", "Strands + Amazon Bedrock"],
+        "2 · Choose how it runs",
+        ["Quick demo · recommended", "AI assistant · Gemini", "AI assistant · Amazon Bedrock"],
         index=0,
     )
-    use_strands = not provider_label.startswith("Fast")
+    use_strands = provider_label.startswith("AI")
     provider = "gemini" if "Gemini" in provider_label else "bedrock"
-    st.caption("For a reliable recruiter demo: Guided demo + Fast preview. Choose an AI provider only when its credentials are configured.")
-    st.info("Your CSV is used only during this browser session. RecallRadar never submits a claim automatically.")
+    st.caption("New here? Keep the recommended choices and press the main button.")
+    st.info("Your uploaded list stays in this browser session. Nothing is sent to a company automatically.")
     st.divider()
-    st.markdown("**Agent guardrails**")
-    st.write("✓ Exact identifiers first")
-    st.write("✓ Weak candidates suppressed")
-    st.write("✓ Official verification required")
-    st.write("✓ No action without approval")
+    st.markdown("**How RecallRadar keeps you safe**")
+    st.write("✓ Checks exact product details")
+    st.write("✓ Hides weak or uncertain matches")
+    st.write("✓ Links to the official notice")
+    st.write("✓ Waits for your approval")
 
-st.subheader("Run a household safety check")
-step1, step2, step3 = st.columns(3)
-step1.markdown('<div class="setup-card"><span class="step">Step 1</span><h3>Add your inventory</h3><p>Upload a receipt export or simple CSV. Only the product name is mandatory.</p></div>', unsafe_allow_html=True)
-step2.markdown('<div class="setup-card"><span class="step">Step 2</span><h3>Choose intelligence</h3><p>Use official live notices, then let Strands prepare only evidence-backed decisions.</p></div>', unsafe_allow_html=True)
-step3.markdown('<div class="setup-card"><span class="step">Step 3</span><h3>Review safely</h3><p>Open the official notice, approve or dismiss, and download an audit-ready report.</p></div>', unsafe_allow_html=True)
+st.subheader("Ready to check your products?")
+st.markdown(
+    '<div class="friendly-banner"><div class="face">👋</div><div><b>First time here?</b><br>'
+    '<span>Use the example products. It takes one click and shows exactly how RecallRadar works.</span></div></div>',
+    unsafe_allow_html=True,
+)
 
 upload_col, template_col = st.columns([3, 1])
 with upload_col:
@@ -266,7 +344,7 @@ else:
     with st.expander("Review products before scanning", expanded=False):
         st.dataframe(preview, width="stretch", hide_index=True)
 
-scan_label = "Search official CPSC recalls" if source == "live" else "Run guided safety scan"
+scan_label = "Check the official recall database" if source == "live" else "Show me how RecallRadar works"
 if st.button(scan_label, type="primary", width="stretch", disabled=bool(preview_error)):
     with st.status("Radar is investigating product signals…", expanded=True) as status:
         scan_progress = st.progress(12, text="Reading household identifiers")

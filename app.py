@@ -328,7 +328,7 @@ st.markdown(
         <p class="kicker">Personal product-safety monitor</p>
         <h1>Check the products you own. Know what to do next.</h1>
         <p class="lead">RecallRadar compares your product details with recall notices, filters out weak matches, and gives you a clear next step to review.</p>
-        <div class="hero-actions"><a class="hero-link" href="#check-products">Check example products</a><span class="hero-note">Free demo · No account required</span></div>
+        <div class="hero-actions"><a class="hero-link" href="#check-products">Search live recalls</a><span class="hero-note">Live U.S. CPSC data · No account required</span></div>
       </div>
       <div class="preview-card">
         <div class="preview-head"><span>Product safety check</span><b>Ready</b></div>
@@ -346,7 +346,7 @@ st.markdown(
     <section class="process-wrap">
       <span class="section-kicker">How it works</span><h2>One careful check, from product list to decision.</h2>
       <div class="process-line">
-        <div class="process-step"><span class="process-num">01</span><b>Add products</b><p>Use the example list or upload a CSV with the details you have.</p></div>
+        <div class="process-step"><span class="process-num">01</span><b>Add products</b><p>Enter one product directly, or upload a CSV when you want to check several.</p></div>
         <div class="process-step"><span class="process-num">02</span><b>Verify matches</b><p>RecallRadar checks official notices and compares exact identifiers.</p></div>
         <div class="process-step"><span class="process-num">03</span><b>Review the action</b><p>Read the evidence, open the official notice, and choose what happens next.</p></div>
       </div>
@@ -357,15 +357,15 @@ st.markdown(
 
 st.markdown(
     '<div id="check-products" class="check-panel"><span class="section-kicker">Start a check</span>'
-    '<h2>Choose how you want to try RecallRadar</h2><p>The example list is the fastest way to see a complete result.</p></div>',
+    '<h2>Search official product recall notices</h2><p>Live CPSC search opens first. The example walkthrough remains available only when you choose it.</p></div>',
     unsafe_allow_html=True,
 )
 control_a, control_b = st.columns(2)
 with control_a:
     source_label = st.radio(
         "Product source",
-        ["Example products", "Official CPSC search"],
-        captions=["Reliable walkthrough with visible matches", "Search live government notices"],
+        ["Official CPSC search", "Example products"],
+        captions=["Search live government notices", "Optional synthetic walkthrough"],
         horizontal=True,
     )
 with control_b:

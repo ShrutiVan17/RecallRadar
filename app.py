@@ -205,19 +205,19 @@ st.markdown(
     @keyframes orbB{50%{transform:translate(110px,-70px) scale(.86)}}
 
     /* Keep Streamlit widgets readable against the dark visual system */
-    section.main [data-testid="stFileUploader"] label p,
-    section.main [data-testid="stWidgetLabel"] p,
-    section.main [data-testid="stMetricLabel"] p{color:#afc3d5!important}
-    section.main [data-testid="stMetricValue"] *{color:#f4fbff!important}
-    section.main [data-testid="stFileUploaderDropzone"]{background:#eef5fa!important;border:1px solid #b7cad8!important}
-    section.main [data-testid="stFileUploaderDropzone"] p,
-    section.main [data-testid="stFileUploaderDropzone"] small,
-    section.main [data-testid="stFileUploaderDropzone"] span{color:#17324a!important}
-    section.main [data-testid="stFileUploaderDropzone"] button{background:#123149!important;border:1px solid #294f68!important}
-    section.main [data-testid="stFileUploaderDropzone"] button p{color:#fff!important}
-    section.main [data-testid="stDownloadButton"] button{background:#10283a!important;border:1px solid #31546a!important}
-    section.main [data-testid="stDownloadButton"] button p{color:#f3f8fc!important}
-    section.main [data-testid="stExpander"] details{background:rgba(12,31,48,.55);border-color:#203a51}
+    [data-testid="stFileUploader"] label p,[data-testid="stWidgetLabel"] p,
+    [data-testid="stMetricLabel"] *{color:#afc3d5!important}
+    [data-testid="stMetricValue"] *{color:#f4fbff!important}
+    [data-testid="stFileUploaderDropzone"]{background:#10283a!important;border:1px dashed #3f6f86!important}
+    [data-testid="stFileUploaderDropzone"] p,[data-testid="stFileUploaderDropzone"] small,
+    [data-testid="stFileUploaderDropzone"] span{color:#dceaf4!important}
+    [data-testid="stFileUploaderDropzone"] button{background:#63e6be!important;border:0!important}
+    [data-testid="stFileUploaderDropzone"] button *{color:#06131f!important}
+    [data-testid="stDownloadButton"] button,.stDownloadButton button{background:#10283a!important;border:1px solid #3f6f86!important}
+    [data-testid="stDownloadButton"] button *,.stDownloadButton button *{color:#f3f8fc!important}
+    [data-testid="stStatusWidget"]{background:#0d1c2d!important;border:1px solid #294158!important}
+    [data-testid="stStatusWidget"] *{color:#dceaf4!important}
+    [data-testid="stExpander"] details{background:rgba(12,31,48,.72)!important;border-color:#294158!important}
     @media(max-width:800px){.radar-wrap{grid-template-columns:1fr}.agent-flow{grid-template-columns:1fr 1fr}
       .recall-card{grid-template-columns:1fr}.signal-row{grid-template-columns:1fr}
       .simple-steps{grid-template-columns:1fr}.hero h1{font-size:clamp(2.55rem,13vw,4rem)}

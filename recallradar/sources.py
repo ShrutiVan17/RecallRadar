@@ -218,10 +218,6 @@ def fetch_cpsc_recalls(products: list[Product] | None = None, limit: int = 75, t
         except Exception as exc:
             failures.append(str(exc))
 
-    if failures and not collected:
-        raise RuntimeError(
-            "The official CPSC service did not respond. Please wait a moment and try again."
-        )
     # Merge the newest rows from CPSC's official weekly CSV. This covers
     # notices that can appear before the legacy API's search index catches up.
     try:
@@ -230,5 +226,9 @@ def fetch_cpsc_recalls(products: list[Product] | None = None, limit: int = 75, t
     except Exception as exc:
         failures.append(str(exc))
 
+    if failures and not collected:
+        raise RuntimeError(
+            "The official CPSC service did not respond. Please wait a moment and try again."
+        )
     return list(collected.values())
 

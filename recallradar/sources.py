@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import csv
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, timedelta
+from functools import lru_cache
 from pathlib import Path
 
 import requests
@@ -97,29 +99,53 @@ def _parse_cpsc_payload(payload: list[dict], limit: int) -> list[Recall]:
     return recalls
 
 
-def fetch_cpsc_recalls(products: list[Product] | None = None, limit: int = 75, timeout: int = 12) -> list[Recall]:
-    """Query the official CPSC API, targeting known product identifiers."""
-    queries: list[dict[str, str]] = []
+@lru_cache(maxsize=256)
+def _fetch_cpsc_query(query_items: tuple[tuple[str, str], ...], limit: int, timeout: int) -> tuple[Recall, ...]:
+    """Fetch one CPSC query and briefly reuse identical results."""
+    response = requests.get(
+        CPSC_URL,
+        params={"format": "json", **dict(query_items)},
+        headers={"User-Agent": "RecallRadar/1.0"},
+        timeout=timeout,
+    )
+    response.raise_for_status()
+    payload = response.json()
+    if not isinstance(payload, list):
+        raise RuntimeError("The CPSC API returned an unexpected response.")
+    return tuple(_parse_cpsc_payload(payload, limit))
+
+
+def fetch_cpsc_recalls(products: list[Product] | None = None, limit: int = 75, timeout: int = 8) -> list[Recall]:
+    """Query CPSC concurrently, deduplicate results, and avoid repeated identical calls."""
+    raw_queries: list[dict[str, str]] = []
     for product in (products or [])[:40]:
         if product.model:
-            queries.append({"ProductModel": product.model})
+            raw_queries.append({"ProductModel": product.model})
         elif product.name:
-            queries.append({"ProductName": product.name})
-    if not queries:
-        queries = [{"RecallDateStart": (date.today() - timedelta(days=1095)).strftime("%m/%d/%Y")}]
+            raw_queries.append({"ProductName": product.name})
+    if not raw_queries:
+        raw_queries = [{"RecallDateStart": (date.today() - timedelta(days=1095)).strftime("%m/%d/%Y")}]
 
+    query_keys = list(dict.fromkeys(tuple(sorted(query.items())) for query in raw_queries))
     collected: dict[str, Recall] = {}
-    for query in queries:
-        response = requests.get(
-            CPSC_URL,
-            params={"format": "json", **query},
-            headers={"User-Agent": "RecallRadar-Hackathon/1.0"},
-            timeout=timeout,
+    failures: list[str] = []
+    worker_count = min(6, len(query_keys))
+
+    with ThreadPoolExecutor(max_workers=worker_count) as pool:
+        futures = {
+            pool.submit(_fetch_cpsc_query, query_key, limit, timeout): query_key
+            for query_key in query_keys
+        }
+        for future in as_completed(futures):
+            try:
+                for recall in future.result():
+                    collected[recall.recall_id] = recall
+            except Exception as exc:
+                failures.append(str(exc))
+
+    if failures and not collected:
+        raise RuntimeError(
+            "The official CPSC service did not respond. Please wait a moment and try again."
         )
-        response.raise_for_status()
-        payload = response.json()
-        if not isinstance(payload, list):
-            raise RuntimeError("The CPSC API returned an unexpected response.")
-        for recall in _parse_cpsc_payload(payload, limit):
-            collected[recall.recall_id] = recall
     return list(collected.values())
+

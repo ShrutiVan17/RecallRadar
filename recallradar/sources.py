@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 import csv
+import html
+import io
+import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, timedelta
 from functools import lru_cache
 from pathlib import Path
+from urllib.parse import quote
 
 import requests
 
@@ -14,6 +18,7 @@ from .core import Product, Recall
 
 
 CPSC_URL = "https://www.saferproducts.gov/RestWebServices/Recall"
+CPSC_CSV_URL = "https://www.cpsc.gov/s3fs-public/recall-data/recalls_recall_listing.csv"
 
 FIELD_ALIASES = {
     "product": "name", "product_name": "name", "item": "name",
@@ -117,6 +122,63 @@ def _fetch_cpsc_query(query_items: tuple[tuple[str, str], ...], limit: int, time
     return tuple(_parse_cpsc_payload(payload, limit))
 
 
+def _clean_cpsc_text(value: object) -> str:
+    text = html.unescape(str(value or ""))
+    return re.sub(r"<[^>]+>", " ", text).replace("\xa0", " ").strip()
+
+
+@lru_cache(maxsize=1)
+def _fetch_recent_cpsc_csv(timeout: int = 12) -> tuple[Recall, ...]:
+    """Read the newest official CPSC CSV rows without downloading the 17 MB archive."""
+    response = requests.get(
+        CPSC_CSV_URL,
+        headers={
+            "User-Agent": "RecallRadar/1.0",
+            "Range": "bytes=0-1048575",
+        },
+        timeout=timeout,
+    )
+    response.raise_for_status()
+    text = response.content.decode("utf-8-sig", errors="ignore")
+    if "\n" in text:
+        text = text.rsplit("\n", 1)[0] + "\n"
+
+    recalls: list[Recall] = []
+    for row in csv.DictReader(io.StringIO(text)):
+        recall_id = _clean_cpsc_text(row.get("Recall Number"))
+        if not recall_id:
+            continue
+        title = _clean_cpsc_text(row.get("Recall Heading"))
+        product_name = _clean_cpsc_text(row.get("Name of product"))
+        description = _clean_cpsc_text(row.get("Description"))
+        brand = ", ".join(
+            part
+            for part in (
+                _clean_cpsc_text(row.get("Importers")),
+                _clean_cpsc_text(row.get("Manufacturers")),
+                _clean_cpsc_text(row.get("Distributors")),
+            )
+            if part
+        )
+        consumer_action = _clean_cpsc_text(row.get("Consumer Action"))
+        remedy_type = _clean_cpsc_text(row.get("Remedy Type"))
+        recalls.append(
+            Recall(
+                recall_id=recall_id,
+                title=title or product_name or "CPSC recall",
+                brand=brand,
+                product_name=" ".join(part for part in (product_name, description) if part),
+                models=description,
+                lots=description,
+                hazard=_clean_cpsc_text(row.get("Hazard Description")),
+                remedy=consumer_action or remedy_type,
+                official_url=f"https://www.cpsc.gov/Recalls?search_combined_fields={quote(recall_id)}",
+                recall_date=_clean_cpsc_text(row.get("Date")),
+            )
+        )
+    return tuple(recalls)
+
+
 def fetch_cpsc_recalls(products: list[Product] | None = None, limit: int = 75, timeout: int = 8) -> list[Recall]:
     """Query CPSC concurrently, deduplicate results, and avoid repeated identical calls."""
     raw_queries: list[dict[str, str]] = []
@@ -160,5 +222,13 @@ def fetch_cpsc_recalls(products: list[Product] | None = None, limit: int = 75, t
         raise RuntimeError(
             "The official CPSC service did not respond. Please wait a moment and try again."
         )
+    # Merge the newest rows from CPSC's official weekly CSV. This covers
+    # notices that can appear before the legacy API's search index catches up.
+    try:
+        for recall in _fetch_recent_cpsc_csv(max(timeout, 12)):
+            collected[recall.recall_id] = recall
+    except Exception as exc:
+        failures.append(str(exc))
+
     return list(collected.values())
 

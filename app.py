@@ -385,6 +385,20 @@ manual_model = ""
 manual_lot = ""
 manual_upc = ""
 
+def clear_previous_scan() -> None:
+    """Hide results as soon as the product query changes."""
+    for key in (
+        "matches",
+        "product_count",
+        "scan_source",
+        "scan_time",
+        "decisions",
+        "agent_brief",
+        "agent_error",
+        "visible_query_signature",
+    ):
+        st.session_state.pop(key, None)
+
 if source == "live":
     st.markdown(
         '<div class="live-search-panel"><b>Search the live U.S. CPSC recall database</b>'
@@ -394,16 +408,16 @@ if source == "live":
     )
     name_col, brand_col = st.columns([2, 1])
     with name_col:
-        manual_name = st.text_input("Product name", placeholder="Example: digital air fryer")
+        manual_name = st.text_input("Product name", placeholder="Example: digital air fryer", on_change=clear_previous_scan)
     with brand_col:
-        manual_brand = st.text_input("Brand", placeholder="Example: NorthStar")
+        manual_brand = st.text_input("Brand", placeholder="Example: NorthStar", on_change=clear_previous_scan)
     model_col, lot_col, upc_col = st.columns(3)
     with model_col:
-        manual_model = st.text_input("Model number", placeholder="Example: AF-900")
+        manual_model = st.text_input("Model number", placeholder="Example: AF-900", on_change=clear_previous_scan)
     with lot_col:
-        manual_lot = st.text_input("Lot number", placeholder="Optional")
+        manual_lot = st.text_input("Lot number", placeholder="Optional", on_change=clear_previous_scan)
     with upc_col:
-        manual_upc = st.text_input("UPC or barcode", placeholder="Optional")
+        manual_upc = st.text_input("UPC or barcode", placeholder="Optional", on_change=clear_previous_scan)
 
     with st.expander("Check several products with a CSV instead"):
         uploaded = st.file_uploader(

@@ -37,7 +37,9 @@ RecallRadar changes that workflow. It turns receipt-derived records into a safet
 
 **Try it:** [recallradar-ofegn2yso5jbkc3tpgejhm.streamlit.app](https://recallradar-ofegn2yso5jbkc3tpgejhm.streamlit.app/)
 
-> Demo mode uses synthetic household data and requires no API key. Live mode depends on the availability and coverage of the CPSC public recall service.
+> Streamlit Community Cloud may put the app to sleep after inactivity. If prompted, click **Yes, get this app back up!** and allow roughly 30 seconds for startup.
+>
+> For the most reliable walkthrough, keep **Guided demo · synthetic** and **Fast preview · no AI key** selected. Live mode depends on the availability and coverage of the CPSC public recall service.
 
 ## Architecture
 

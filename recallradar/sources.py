@@ -75,7 +75,8 @@ def _parse_cpsc_payload(payload: list[dict], limit: int) -> list[Recall]:
     for item in payload[:limit]:
         products = item.get("Products") or [{}]
         product_text = _join(products, "Name", "Description")
-        model_text = _join(products, "Model")
+        explicit_models = _join(products, "Model")
+        model_text = ", ".join(part for part in (explicit_models, product_text) if part)
         upc_text = _join(item.get("ProductUPCs") or [], "UPC")
         brands = item.get("Manufacturers") or []
         brand_text = _join(brands, "Name")
@@ -89,6 +90,7 @@ def _parse_cpsc_payload(payload: list[dict], limit: int) -> list[Recall]:
                 brand=brand_text,
                 product_name=product_text,
                 models=model_text,
+                lots=product_text,
                 hazard=hazards,
                 remedy=remedies,
                 official_url=str(item.get("URL") or ""),
@@ -121,7 +123,7 @@ def fetch_cpsc_recalls(products: list[Product] | None = None, limit: int = 75, t
     for product in (products or [])[:40]:
         if product.model:
             raw_queries.append({"ProductModel": product.model})
-        elif product.name:
+        if product.name:
             raw_queries.append({"ProductName": product.name})
     if not raw_queries:
         raw_queries = [{"RecallDateStart": (date.today() - timedelta(days=1095)).strftime("%m/%d/%Y")}]
@@ -142,6 +144,17 @@ def fetch_cpsc_recalls(products: list[Product] | None = None, limit: int = 75, t
                     collected[recall.recall_id] = recall
             except Exception as exc:
                 failures.append(str(exc))
+
+    if not collected and products:
+        # The API's model/name indexes occasionally lag behind newly published notices.
+        # Search the current year's official feed as a fallback, then let the
+        # deterministic matcher verify exact identifiers from the product description.
+        fallback_key = (("RecallDateStart", date.today().replace(month=1, day=1).strftime("%m/%d/%Y")),)
+        try:
+            for recall in _fetch_cpsc_query(fallback_key, max(limit, 600), max(timeout, 12)):
+                collected[recall.recall_id] = recall
+        except Exception as exc:
+            failures.append(str(exc))
 
     if failures and not collected:
         raise RuntimeError(

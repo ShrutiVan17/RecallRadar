@@ -201,11 +201,11 @@ with st.sidebar:
     provider_label = st.selectbox(
         "2 · Choose reasoning engine",
         ["Fast preview · no AI key", "Strands + Gemini free tier", "Strands + Amazon Bedrock"],
-        index=1 if os.getenv("RECALLRADAR_PROVIDER", "").lower() == "gemini" else 0,
+        index=0,
     )
     use_strands = not provider_label.startswith("Fast")
     provider = "gemini" if "Gemini" in provider_label else "bedrock"
-    st.caption("For your video: Guided demo + Strands with Gemini.")
+    st.caption("For a reliable recruiter demo: Guided demo + Fast preview. Choose an AI provider only when its credentials are configured.")
     st.info("Your CSV is used only during this browser session. RecallRadar never submits a claim automatically.")
     st.divider()
     st.markdown("**Agent guardrails**")
@@ -283,11 +283,16 @@ if st.button(scan_label, type="primary", width="stretch", disabled=bool(preview_
             st.session_state["scan_time"] = datetime.now(timezone.utc).isoformat()
             st.session_state["decisions"] = {}
             st.session_state.pop("agent_brief", None)
+            st.session_state.pop("agent_error", None)
 
             if use_strands:
                 scan_progress.progress(84, text="Strands is preparing human decisions")
-                with st.spinner("Strands is generating the decision brief…"):
-                    st.session_state["agent_brief"] = run_strands_scan(inventory_path, source, provider)
+                try:
+                    with st.spinner("Strands is generating the decision brief…"):
+                        st.session_state["agent_brief"] = run_strands_scan(inventory_path, source, provider)
+                except Exception as agent_exc:
+                    st.session_state["agent_error"] = str(agent_exc)
+                    st.write("AI explanation unavailable; verified matching results are still ready.")
             scan_progress.progress(100, text="Safety scan complete")
             st.write("✓ Decision packets ready")
             status.update(label="Scan complete — only actionable evidence is shown", state="complete")
@@ -332,7 +337,13 @@ if matches is not None:
         )
 
     if not matches:
-        st.success("No evidence-backed candidate was found in this scan.")
+        if st.session_state.get("scan_source") == "live":
+            st.success(
+                f"Live CPSC search completed successfully. {product_count} products were checked, "
+                "and no exact evidence-backed recall match was found."
+            )
+        else:
+            st.success("The guided scan completed with no evidence-backed candidate.")
         st.caption("This does not certify that a product is safe. Keep identifiers updated and scan again when new notices appear.")
     else:
         st.subheader("Attention map")
@@ -420,6 +431,14 @@ if matches is not None:
     if st.session_state.get("agent_brief"):
         with st.expander("How the Strands agent reached this result"):
             st.write(st.session_state["agent_brief"])
+
+    if st.session_state.get("agent_error"):
+        st.warning(
+            "The optional AI explanation could not run, but the deterministic recall search "
+            "and verified results completed successfully. Select Fast preview to continue without an AI key."
+        )
+        with st.expander("Technical provider error"):
+            st.code(st.session_state["agent_error"], language=None)
 
 st.divider()
 st.caption(

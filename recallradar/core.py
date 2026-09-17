@@ -101,7 +101,11 @@ def match_product(product: Product, recall: Recall) -> Match | None:
         score += 75
         reasons.append(f"Exact UPC match: {product.upc}")
 
-    brand_match = bool(normalize(product.brand)) and normalize(product.brand) == normalize(recall.brand)
+    normalized_brand = normalize(product.brand)
+    recall_identity = normalize(f"{recall.brand} {recall.product_name} {recall.title}")
+    brand_match = bool(normalized_brand) and (
+        normalized_brand == normalize(recall.brand) or normalized_brand in recall_identity
+    )
     if brand_match:
         score += 15
         reasons.append(f"Brand match: {product.brand}")

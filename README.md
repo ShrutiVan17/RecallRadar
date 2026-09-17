@@ -1,37 +1,90 @@
 # RecallRadar
 
-> A quiet AI agent that finds product recalls hiding in everyday purchases and prepares the safest next action.
+> An AI agent that checks household purchases against product recalls, verifies exact identifiers, and prepares the safest next action.
 
-[![Python](https://img.shields.io/badge/Python-3.11+-3776AB)](https://www.python.org/)
-[![Strands Agents](https://img.shields.io/badge/Strands-Agents_SDK-FF9900)](https://strandsagents.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+<p align="center">
+  <a href="https://recallradar-ofegn2yso5jbkc3tpgejhm.streamlit.app/"><strong>Open the live app</strong></a>
+  ·
+  <a href="docs/DEMO_SCRIPT.md"><strong>Watch the demo flow</strong></a>
+  ·
+  <a href="docs/ARCHITECTURE.md"><strong>Read the architecture</strong></a>
+</p>
 
-RecallRadar turns receipts and household inventory records into an animated, continuously checkable safety inventory. It compares exact model, lot, UPC, brand, and product details against recall notices, rejects weak matches, and surfaces only decisions that need a person.
+<p align="center">
+  <a href="https://recallradar-ofegn2yso5jbkc3tpgejhm.streamlit.app/">
+    <img alt="Live Streamlit App" src="https://img.shields.io/badge/Live_App-Open_RecallRadar-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white">
+  </a>
+  <img alt="Python" src="https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white">
+  <img alt="Strands Agents" src="https://img.shields.io/badge/Strands-Agents_SDK-FF9900?style=for-the-badge">
+  <img alt="MIT License" src="https://img.shields.io/badge/License-MIT-2EA44F?style=for-the-badge">
+</p>
 
-## Why it matters
+## The problem
 
-Recall announcements are scattered across agencies and news feeds. People rarely remember model numbers, return windows, or which retailer sold an item. A search app still requires the person to remember to search. RecallRadar performs the repetitive work: normalize the inventory, retrieve notices, verify candidates, rank risk, prepare evidence, and draft the next action.
+Recall notices are scattered across agencies and news feeds. People must notice an announcement, remember what they bought, find a model or lot number, interpret the warning, and decide what to do.
 
-## What the agent does
+RecallRadar changes that workflow. It turns receipt-derived records into a safety inventory, checks them against recall notices, suppresses weak matches, and surfaces only decisions that need a person.
 
-1. Loads a receipt-derived household inventory.
-2. Validates identifiers and flags records that need better evidence.
-3. Searches the official CPSC API using each household product's model or name.
-4. Matches conservatively using model/lot identifiers plus brand and product evidence.
-5. Rejects ambiguous candidates instead of creating panic.
-6. Prepares a stop-use, refund, replacement, or contact-manufacturer action packet.
-7. Records a human approve/dismiss decision without contacting anyone automatically.
-8. Exports a decision report and machine-readable audit packet.
+## 30-second product tour
+
+1. Upload a simple product inventory or use the synthetic demo.
+2. Search the official U.S. CPSC recall feed.
+3. Verify model, lot, UPC, brand, and product evidence.
+4. Suppress ambiguous candidates instead of creating false alarms.
+5. Review the hazard, official notice, recommended remedy, and prepared message.
+6. Approve or dismiss the action. RecallRadar never contacts a company automatically.
+7. Export a CSV decision report and JSON audit packet.
+
+**Try it:** [recallradar-ofegn2yso5jbkc3tpgejhm.streamlit.app](https://recallradar-ofegn2yso5jbkc3tpgejhm.streamlit.app/)
+
+> Demo mode uses synthetic household data and requires no API key. Live mode depends on the availability and coverage of the CPSC public recall service.
 
 ## Architecture
 
-![RecallRadar architecture](docs/architecture.svg)
+[![RecallRadar architecture](docs/architecture.svg)](docs/architecture.svg)
 
-The Strands agent is the orchestrator. Deterministic Python tools perform safety-critical matching and calculations; the model selects tools, explains evidence, and decides what to surface. External actions remain behind a human approval gate.
+The Strands agent orchestrates the workflow. Deterministic Python tools handle safety-critical matching and risk rules; the model selects tools, explains the evidence, and prepares a decision brief. Every external action remains behind a human approval gate.
 
-## Fastest demo
+```mermaid
+flowchart LR
+    A["Receipt-derived inventory"] --> B["Validate identifiers"]
+    B --> C["Retrieve recall notices"]
+    C --> D["Verify exact evidence"]
+    D --> E["Rank risk"]
+    E --> F["Human review"]
+    F --> G["Export decision packet"]
+```
 
-~~~bash
+## Engineering decisions
+
+| Challenge | Design choice |
+|---|---|
+| Similar product names can create false alarms | Exact model, lot, or UPC evidence is prioritized |
+| Live government data may be incomplete or unavailable | The app reports source limits and never substitutes synthetic results in live mode |
+| AI should not make irreversible safety decisions | The agent prepares actions but requires human approval |
+| Recruiters and judges need a reliable walkthrough | A key-free synthetic demo runs without AWS or Gemini credentials |
+| Results should be inspectable | Every surfaced match includes evidence and an exportable audit packet |
+
+## What I built
+
+- A complete Streamlit product experience with an animated monitoring interface
+- A Strands agent with custom tools for inventory loading, recall retrieval, exact matching, and action preparation
+- A live adapter for the U.S. Consumer Product Safety Commission recall service
+- Conservative matching rules that reject same-brand, wrong-model candidates
+- Risk classification and evidence-backed action packets
+- Human approve/dismiss controls with no automatic external submission
+- CSV and JSON exports for operational review and auditability
+- Tests covering matching logic and safety boundaries
+- Optional Google Gemini and Amazon Bedrock execution paths
+- A recurring monitor that remembers previously surfaced decisions
+
+## Technology
+
+`Python` · `Streamlit` · `Pandas` · `Strands Agents SDK` · `Google Gemini` · `Amazon Bedrock` · `CPSC API` · `Pytest` · `Docker`
+
+## Run locally
+
+```bash
 git clone https://github.com/ShrutiVan17/RecallRadar.git
 cd RecallRadar
 python -m venv .venv
@@ -39,93 +92,81 @@ python -m venv .venv
 # macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
 streamlit run app.py
-~~~
+```
 
-Click **Start animated safety scan**. Demo mode requires no AWS keys and uses synthetic household data.
+Click **Run guided safety scan**. Demo mode uses synthetic household data and requires no cloud credentials.
 
-### Background mode
+## Agent execution options
 
-Run one check with `python monitor.py --once`, or keep the agent watching with `python monitor.py --source live --interval 3600`. It stores only previously surfaced match IDs and emits new decision packets, so unchanged conditions stay quiet.
+### Strands + Google Gemini
 
-## Free Strands route: Google Gemini
+Create a Gemini API key in Google AI Studio and keep it outside GitHub.
 
-Gemini 3.5 Flash-Lite can run RecallRadar through the real Strands agent without an AWS account. Create a Gemini API key in Google AI Studio, keep it outside GitHub, then run:
-
-~~~powershell
+```powershell
 $env:GEMINI_API_KEY="YOUR_KEY"
 $env:RECALLRADAR_PROVIDER="gemini"
 streamlit run app.py
-~~~
+```
 
-Choose **Strands + Gemini free tier** in the sidebar.
+### Strands + Amazon Bedrock
 
-## Optional route: Strands + Amazon Bedrock
+Follow the complete [AWS setup guide](docs/AWS_SETUP.md), configure your normal AWS credentials, and run:
 
-For a complete Windows walkthrough, use [AWS setup](docs/AWS_SETUP.md).
-
-Configure AWS credentials using the AWS CLI or your normal AWS environment. Do not paste credentials into source code.
-
-~~~bash
-aws configure
-# Windows PowerShell:
-$env:RECALLRADAR_USE_STRANDS="1"
-# macOS/Linux:
+```bash
 export RECALLRADAR_USE_STRANDS=1
-streamlit run app.py
-~~~
-
-The SDK defaults to Amazon Bedrock. Your AWS identity needs permission to invoke the configured model. Optionally set:
-
-~~~bash
 export RECALLRADAR_MODEL_ID="us.amazon.nova-lite-v1:0"
-~~~
+streamlit run app.py
+```
 
-If Bedrock is unavailable, the product remains demonstrable in deterministic demo mode; the repository still contains the full Strands orchestration path.
+If a model provider is unavailable, the deterministic demo still demonstrates the matching, safety, and decision workflow.
 
-## Live CPSC feed
+## Live CPSC mode
 
-Select **Live CPSC feed** in the sidebar. RecallRadar queries the U.S. Consumer Product Safety Commission feed. If the service is unavailable, the app reports the error instead of presenting synthetic results as live. Live results depend on source availability and field completeness.
+Select **Official CPSC · live** in the sidebar. RecallRadar searches the U.S. Consumer Product Safety Commission feed using each product model or name.
 
-In live mode, RecallRadar sends targeted `ProductModel` or `ProductName` searches to the official CPSC Recall API. It never substitutes synthetic notices when a live search returns no results. CPSC does not cover every product category; food, medicine, vehicles, and other regulator-specific recalls are outside this build's live scope.
+It never substitutes synthetic notices when a live search returns no results. CPSC does not cover every category; food, medicine, vehicles, and other regulator-specific recalls are outside this prototype's live scope.
 
 ## Inventory format
 
-Only `name` (or `product_name`) is required. For reliable matching, include at least one exact identifier: `model`, `lot`, or `upc`. RecallRadar also accepts friendly headers such as `manufacturer`, `model_number`, `lot_number`, `barcode`, and `store`, and generates missing product IDs automatically. The interface includes a downloadable CSV template.
+Only `name` or `product_name` is required. Reliable matching benefits from at least one exact identifier: `model`, `lot`, or `upc`.
+
+Friendly headers such as `manufacturer`, `model_number`, `lot_number`, `barcode`, and `store` are also accepted. The app includes a downloadable CSV template.
 
 ## Repository map
 
 | Path | Purpose |
 |---|---|
-| `app.py` | Complete Streamlit product experience |
-| `monitor.py` | Quiet recurring monitor with new-decision memory |
-| `docs/AWS_SETUP.md` | Secure Bedrock connection walkthrough |
+| `app.py` | Streamlit product experience |
+| `monitor.py` | Recurring monitor with new-decision memory |
 | `recallradar/agent.py` | Strands agent and custom tools |
 | `recallradar/core.py` | Conservative matching and risk rules |
-| `recallradar/sources.py` | Demo and live CPSC recall sources |
+| `recallradar/sources.py` | Demo and live CPSC sources |
 | `data/` | Synthetic, privacy-safe demo records |
 | `tests/` | Matching and safety-gate tests |
-| `docs/architecture.svg` | Submission-ready architecture diagram |
-| `docs/DEMO_SCRIPT.md` | Under-five-minute video script |
-| `DEVPOST.md` | Submission copy |
-
-## Safety and privacy
-
-- Demo records are synthetic.
-- A match is a lead, not an official safety determination.
-- Low-confidence results are withheld.
-- RecallRadar never submits a claim or contacts a company without approval.
-- Users should verify any match on the linked official agency notice.
-- No secrets, receipts, or personal information are committed to the repository.
+| `docs/architecture.svg` | System architecture |
+| `docs/DEMO_SCRIPT.md` | Under-five-minute demonstration script |
+| `DEVPOST.md` | Hackathon submission copy |
 
 ## Tests
 
-~~~bash
+```bash
 pytest -q
-~~~
+```
 
-## Hackathon
+## Responsible-use boundaries
 
-Built for the **Agents for Humans Hackathon**, Everyday Agents track, with the Strands Agents SDK. AgentCore is an optional next deployment step.
+- Demo records are synthetic.
+- A surfaced match is a lead, not an official safety determination.
+- Low-confidence candidates are withheld.
+- RecallRadar never submits a claim or contacts a company without approval.
+- Users should verify every match on the linked official agency notice.
+- No secrets, receipts, or personal information are committed to the repository.
+
+## Project context
+
+Built by **Shruti Vanparia** for the **Agents for Humans Hackathon**, Everyday Agents track.
+
+The next product steps are encrypted receipt-email ingestion, barcode and image extraction, FDA and NHTSA adapters, scheduled cloud scans, notifications, and production observability.
 
 ## License
 
